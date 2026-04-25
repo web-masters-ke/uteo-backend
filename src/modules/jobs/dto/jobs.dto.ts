@@ -125,9 +125,19 @@ export class UpdateJobDto {
 }
 
 export class JobFilterDto extends PaginationDto {
+  // Accept a single type OR a comma-separated list e.g. "FULL_TIME,REMOTE,HYBRID"
   @IsOptional()
-  @IsEnum(JobType)
-  jobType?: JobType;
+  @IsString()
+  jobType?: string;
+
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  // Alias sent by the browse-jobs page
+  @IsOptional()
+  @IsString()
+  keyword?: string;
 
   @IsOptional()
   @IsString()

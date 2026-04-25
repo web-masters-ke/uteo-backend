@@ -53,21 +53,29 @@ export class JobsService {
     const { page, limit, skip } = pageParams(dto);
     const where: Prisma.JobWhereInput = {};
 
-    if (dto.status) {
-      where.status = dto.status;
-    } else {
-      where.status = JobStatus.ACTIVE;
-    }
+    where.status = dto.status ?? JobStatus.ACTIVE;
 
-    if (dto.search) {
+    // keyword is an alias for search (sent by the browse-jobs page)
+    const searchTerm = dto.search || dto.keyword;
+    if (searchTerm) {
       where.OR = [
-        { title: { contains: dto.search, mode: 'insensitive' } },
-        { description: { contains: dto.search, mode: 'insensitive' } },
-        { company: { name: { contains: dto.search, mode: 'insensitive' } } },
+        { title: { contains: searchTerm, mode: 'insensitive' } },
+        { description: { contains: searchTerm, mode: 'insensitive' } },
+        { requirements: { contains: searchTerm, mode: 'insensitive' } },
+        { company: { name: { contains: searchTerm, mode: 'insensitive' } } },
       ];
     }
 
-    if (dto.jobType) where.jobType = dto.jobType;
+    // jobType accepts a single value OR comma-separated list e.g. "FULL_TIME,REMOTE,HYBRID"
+    if (dto.jobType) {
+      const types = dto.jobType.split(',').map((t) => t.trim()).filter(Boolean) as any[];
+      if (types.length === 1) {
+        where.jobType = types[0];
+      } else if (types.length > 1) {
+        where.jobType = { in: types };
+      }
+    }
+
     if (dto.location) where.location = { contains: dto.location, mode: 'insensitive' };
     if (dto.companyId) where.companyId = dto.companyId;
 

@@ -1,0 +1,1867 @@
+// SkillSasa — AI-Powered Trainer Marketplace
+// Prisma schema — trainer marketplace with escrow, commissions, reviews, courses
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum UserRole {
+  CLIENT
+  TRAINER
+  ADMIN
+  SUPER_ADMIN
+  FINANCE_ADMIN
+  SUPPORT
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DEACTIVATED
+  PENDING
+}
+
+enum VerificationStatus {
+  PENDING
+  UNDER_REVIEW
+  VERIFIED
+  REJECTED
+}
+
+enum ExperienceLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum BookingStatus {
+  PENDING_PAYMENT
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  DISPUTED
+  NO_SHOW
+}
+
+enum SessionType {
+  VIRTUAL
+  PHYSICAL
+  HYBRID
+  PRE_RECORDED
+}
+
+enum EscrowStatus {
+  CREATED
+  FUNDED
+  HELD
+  RELEASED
+  REFUNDED
+  FROZEN
+}
+
+enum PaymentProvider {
+  MPESA
+  CARD
+  BANK_TRANSFER
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  SUSPENDED
+  GRACE_PERIOD
+}
+
+enum DisputeStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED_RELEASE
+  RESOLVED_REFUND
+  CLOSED
+}
+
+enum DisputeCategory {
+  PAYMENT
+  NO_SHOW
+  QUALITY
+  MISCONDUCT
+  FRAUD
+  TECHNICAL
+  OTHER
+}
+
+enum SlaPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum SlaStatus {
+  ACTIVE
+  WARNING
+  BREACHED
+  MET
+  PAUSED
+}
+
+enum VerificationRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum NotificationChannel {
+  EMAIL
+  SMS
+  PUSH
+  IN_APP
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+  READ
+}
+
+enum ConversationType {
+  DIRECT
+  GROUP
+  BOOKING
+}
+
+enum WalletStatus {
+  ACTIVE
+  FROZEN
+  CLOSED
+}
+
+enum EntryType {
+  DEBIT
+  CREDIT
+}
+
+enum AuditSeverity {
+  INFO
+  WARN
+  CRITICAL
+}
+
+enum TeamMemberRole {
+  OWNER
+  ADMIN
+  CONSULTANT
+  ASSOCIATE
+}
+
+enum TrainerTier {
+  CERTIFIED       // Has verified credentials/certifications
+  EXPERIENCED     // Significant experience but no formal certs
+  ENTRY_LEVEL     // New to the field, building portfolio
+}
+
+enum TrainerType {
+  PROFESSIONAL    // White collar: corporate training, consulting, coaching
+  VOCATIONAL      // Blue collar: trades, crafts, practical skills
+  BOTH            // Offers both types
+}
+
+enum CredentialType {
+  DEGREE                  // University degree
+  DIPLOMA                 // College diploma
+  CERTIFICATE             // Short course certificate
+  LICENSE                 // Professional license (e.g. CPA, PMP)
+  PROFESSIONAL_MEMBERSHIP // Professional body membership (e.g. ICF, IHRM)
+  TRADE_CERTIFICATE       // NITA, TVETA, or trade body certificate
+  APPRENTICESHIP          // Completed apprenticeship
+  PORTFOLIO               // Portfolio of work (for vocational trainers)
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  CANCELLED
+}
+
+enum CourseStatus {
+  DRAFT
+  UNDER_REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum ReminderType {
+  BOOKING_REMINDER
+  FOLLOW_UP
+  PAYMENT_DUE
+  REVIEW_REQUEST
+  CUSTOM
+}
+
+enum ReminderStatus {
+  SCHEDULED
+  SENT
+  FAILED
+  CANCELLED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  CANCELLED
+  VOID
+}
+
+enum PayoutStatus {
+  REQUESTED
+  APPROVED
+  PROCESSING
+  COMPLETED
+  FAILED
+  REJECTED
+}
+
+enum PayoutMethod {
+  MPESA
+  BANK_TRANSFER
+}
+
+enum MilestoneStatus {
+  PENDING
+  IN_PROGRESS
+  DELIVERED
+  RELEASED
+  DISPUTED
+}
+
+enum PresenceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EXCUSED
+}
+
+enum BreakoutRoomStatus {
+  OPEN
+  CLOSED
+}
+
+// ---------------------------------------------------------------------------
+// Identity
+// ---------------------------------------------------------------------------
+
+model User {
+  id            String     @id @default(uuid())
+  email         String     @unique
+  phone         String?    @unique
+  passwordHash  String?
+  firstName     String?
+  lastName      String?
+  name          String?
+  avatar        String?
+  role          UserRole   @default(CLIENT)
+  status        UserStatus @default(ACTIVE)
+  emailVerified Boolean    @default(false)
+  phoneVerified Boolean    @default(false)
+  lastLoginAt   DateTime?
+  deletedAt     DateTime?
+
+  fcmTokens String[] @default([])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  trainerProfile    TrainerProfile?
+  sessions          UserSession[]
+  passwordResets    PasswordResetToken[]
+  notifications     Notification[]
+  conversations     ConversationParticipant[]
+  messages          Message[]
+  wallet            Wallet?
+  bookingsAsTrainer Booking[]       @relation("BookingTrainer")
+  bookingsAsClient  Booking[]       @relation("BookingClient")
+  reviewsGiven      Review[]        @relation("ReviewAuthor")
+  reviewsReceived   Review[]        @relation("ReviewTrainer")
+  reviewsAsTarget   Review[]        @relation("ReviewTarget")
+  payments          Payment[]
+  subscriptions     Subscription[]
+  disputesRaised    Dispute[]       @relation("DisputeRaiser")
+  disputesAgainst   Dispute[]       @relation("DisputeAgainst")
+  disputesResolved  Dispute[]       @relation("DisputeResolver")
+  disputesAssigned  Dispute[]       @relation("DisputeAssignee")
+  disputeComments   DisputeComment[] @relation("DisputeCommenter")
+  slaPoliciesCreated    SlaPolicy[]     @relation("SlaPolicyCreator")
+  slaAssignmentsCreated SlaAssignment[] @relation("SlaAssignmentCreator")
+  auditLogs         AuditLog[]
+  verificationReviews VerificationRequest[]
+
+  // Team relations
+  firmMembers      TeamMember[]  @relation("FirmMembers")
+  teamMembership   TeamMember[]  @relation("MemberUser")
+  teamInvitedBy    TeamMember[]  @relation("InvitedByUser")
+  firmInvites      TeamInvite[]  @relation("FirmInvites")
+
+  // Availability slot assignment
+  assignedSlots    AvailabilitySlot[] @relation("SlotConsultant")
+
+  // Department relations
+  firmDepartments  Department[] @relation("FirmDepartments")
+  ledDepartments   Department[] @relation("DepartmentLead")
+
+  // Favorites, Courses, Affiliations
+  favorites        Favorite[]
+  coursesCreated   Course[]        @relation("CourseInstructor")
+  enrollments      Enrollment[]
+  submissions      LessonSubmission[] @relation("UserSubmissions")
+  affiliations     InstitutionalAffiliation[]
+  reminders        ScheduledReminder[]
+
+  // Follows
+  followers        Follow[]        @relation("UserFollowers")
+  following        Follow[]        @relation("UserFollowing")
+
+  // Financial
+  invoicesIssued   Invoice[]       @relation("InvoiceIssuer")
+  invoicesReceived Invoice[]       @relation("InvoiceRecipient")
+  payoutRequests   Payout[]
+
+  // Attendance
+  attendance       AttendanceRecord[] @relation("UserAttendance")
+
+  // Onboarding / Recommendations
+  needsProfile     UserNeedsProfile?
+
+  // Course certificates (issued completions)
+  certificates     CourseCertificate[] @relation("UserCertificates")
+
+  // Directly assigned by a trainer (set when trainer adds a learner manually)
+  assignedTrainerId String?
+  assignedTrainer   User?   @relation("TrainerLearners", fields: [assignedTrainerId], references: [id])
+  assignedLearners  User[]  @relation("TrainerLearners")
+
+  // Uteo — Recruitment Platform
+  recruiter        Recruiter[]
+  jobsPosted       Job[]            @relation("JobsPosted")
+  applications     Application[]
+  savedJobs        SavedJob[]
+  jobInteractions  JobInteraction[]
+
+  // Uteo — Job Seeker Profile
+  workExperience   WorkExperience[]
+  education        Education[]
+  jobSeekerProfile JobSeekerProfile?
+  userSkills       UserSkill[]
+
+  @@index([role])
+  @@index([status])
+  @@index([assignedTrainerId])
+}
+
+model UserSession {
+  id           String    @id @default(uuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshToken String    @unique
+  userAgent    String?
+  ipAddress    String?
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// Trainer Profile & Skills
+// ---------------------------------------------------------------------------
+
+model TrainerProfile {
+  id                   String             @id @default(uuid())
+  userId               String             @unique
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firmName             String?
+  bio                  String?
+  hourlyRate           Decimal            @default(0) @db.Decimal(12, 2)
+  currency             String             @default("KES")
+  rating               Decimal            @default(0) @db.Decimal(3, 2)
+  totalReviews         Int                @default(0)
+  verificationStatus   VerificationStatus @default(PENDING)
+  experience           Int                @default(0)
+  location             String?
+  city                 String?
+  county               String?
+  specialization       String?
+  categoryId           String?
+  languages            String[]           @default([])
+  tier                 TrainerTier        @default(ENTRY_LEVEL)
+  trainerType          TrainerType        @default(PROFESSIONAL)
+  availableForOnline   Boolean            @default(true)
+  availableForPhysical Boolean            @default(false)
+  availableForHybrid   Boolean            @default(false)
+  portfolioUrl         String?
+  linkedinUrl          String?
+  websiteUrl           String?
+  customCommissionRate Decimal?           @db.Decimal(5, 4) // Admin override, takes highest priority
+  commissionWaivedUntil DateTime?         // Free commission until this date
+  followerCount        Int                @default(0)
+  completionRate       Float              @default(0.8)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  skills               TrainerSkill[]
+  certifications       Certification[]
+  availabilitySlots    AvailabilitySlot[]
+  verificationRequests VerificationRequest[]
+
+  @@index([verificationStatus])
+  @@index([tier])
+  @@index([trainerType])
+  @@index([categoryId])
+  @@index([city])
+  @@index([rating])
+}
+
+model Skill {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  category    String?
+  trainerType String? // PROFESSIONAL, VOCATIONAL, or null (both)
+  description String?
+  icon        String? // emoji or icon name
+  level       String? // BEGINNER, INTERMEDIATE, ADVANCED, EXPERT
+  isActive    Boolean @default(true)
+  demand      String? // LOW, MEDIUM, HIGH, CRITICAL
+  tags        String[] @default([])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  trainers   TrainerSkill[]
+  jobSkills  JobSkill[]
+  userSkills UserSkill[]
+
+  @@index([category])
+  @@index([trainerType])
+}
+
+model TrainerSkill {
+  id        String         @id @default(uuid())
+  trainerId String
+  trainer   TrainerProfile @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  skillId   String
+  skill     Skill          @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([trainerId, skillId])
+  @@index([skillId])
+}
+
+model Certification {
+  id               String           @id @default(uuid())
+  trainerId        String
+  trainer          TrainerProfile   @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  name             String
+  issuer           String?
+  yearObtained     Int?
+  expiryDate       DateTime?
+  documentUrl      String?
+  credentialType   CredentialType   @default(CERTIFICATE)
+  verified         Boolean          @default(false)
+  verificationNote String?
+  verifiedAt       DateTime?
+  verifiedBy       String?
+  rejectedReason   String?
+  createdAt        DateTime         @default(now())
+
+  verificationRequests VerificationRequest[]
+
+  @@index([trainerId])
+  @@index([credentialType])
+  @@index([verified])
+}
+
+model AvailabilitySlot {
+  id           String         @id @default(uuid())
+  trainerId    String
+  trainer      TrainerProfile @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  dayOfWeek    Int
+  startTime    String
+  endTime      String
+  isActive     Boolean        @default(true)
+  consultantId String?
+  consultant   User?          @relation("SlotConsultant", fields: [consultantId], references: [id])
+  departmentId String?
+  department   Department?    @relation(fields: [departmentId], references: [id])
+  createdAt    DateTime       @default(now())
+
+  @@index([trainerId])
+  @@index([consultantId])
+  @@index([departmentId])
+}
+
+model VerificationRequest {
+  id              String                    @id @default(uuid())
+  trainerId       String
+  trainer         TrainerProfile            @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  certificationId String?
+  certification   Certification?            @relation(fields: [certificationId], references: [id], onDelete: SetNull)
+  documentType    String
+  documentUrl     String
+  status          VerificationRequestStatus @default(PENDING)
+  reviewNote      String?
+  reviewedById    String?
+  reviewedBy      User?                     @relation(fields: [reviewedById], references: [id])
+  reviewedAt      DateTime?
+  createdAt       DateTime                  @default(now())
+
+  @@index([trainerId])
+  @@index([certificationId])
+  @@index([status])
+}
+
+// ---------------------------------------------------------------------------
+// Bookings
+// ---------------------------------------------------------------------------
+
+model Booking {
+  id                 String        @id @default(uuid())
+  trainerId          String
+  trainer            User          @relation("BookingTrainer", fields: [trainerId], references: [id])
+  clientId           String
+  client             User          @relation("BookingClient", fields: [clientId], references: [id])
+  amount             Decimal       @db.Decimal(12, 2)
+  currency           String        @default("KES")
+  status             BookingStatus @default(PENDING_PAYMENT)
+  sessionType        SessionType
+  scheduledAt        DateTime
+  duration           Int
+  location           String?
+  meetingLink        String?
+  notes              String?
+  escrowId           String?
+  courseId            String?
+  lessonId            String?
+  cancellationReason    String?
+  cancelledBy           String?
+  completedAt           DateTime?
+  trainerConfirmed      Boolean   @default(false)
+  clientConfirmed       Boolean   @default(false)
+  trainerConfirmedAt    DateTime?
+  clientConfirmedAt     DateTime?
+  rescheduledFromId     String?
+  rescheduledToId    String?
+  rescheduledAt      DateTime?
+  rescheduledBy      String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  statusLogs       BookingStatusLog[]
+  escrow           EscrowAccount?
+  reviews          Review[]
+  commissionRecord CommissionRecord?
+  disputes         Dispute[]
+  conversation     Conversation?
+  milestones       Milestone[]
+  attendance       AttendanceRecord[]
+  videoRooms       VideoSessionRoom[]
+  recordings       SessionRecording[]
+
+  @@index([trainerId, status])
+  @@index([clientId, status])
+  @@index([status])
+  @@index([scheduledAt])
+}
+
+model VideoSessionRoom {
+  id           String             @id @default(uuid())
+  bookingId    String
+  parentRoomId String?
+  name         String
+  jaasRoomName String             @unique
+  participants String[]           @default([])
+  hostId       String?
+  status       BreakoutRoomStatus @default(OPEN)
+  openedAt     DateTime           @default(now())
+  closedAt     DateTime?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  booking    Booking            @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  parentRoom VideoSessionRoom?  @relation("RoomBreakouts", fields: [parentRoomId], references: [id], onDelete: Cascade)
+  breakouts  VideoSessionRoom[] @relation("RoomBreakouts")
+
+  @@index([bookingId])
+  @@index([parentRoomId])
+  @@index([status])
+}
+
+model BookingStatusLog {
+  id         String   @id @default(uuid())
+  bookingId  String
+  booking    Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  fromStatus String?
+  toStatus   String
+  reason     String?
+  changedBy  String?
+  createdAt  DateTime @default(now())
+
+  @@index([bookingId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Categories
+// ---------------------------------------------------------------------------
+
+model Category {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  icon        String?
+  trainerType String?  // PROFESSIONAL, VOCATIONAL, or null (both)
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  @@index([isActive])
+  @@index([trainerType])
+}
+
+// ---------------------------------------------------------------------------
+// Reviews
+// ---------------------------------------------------------------------------
+
+model Review {
+  id                  String    @id @default(uuid())
+  bookingId           String
+  booking             Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  reviewerId          String
+  reviewer            User      @relation("ReviewAuthor", fields: [reviewerId], references: [id])
+  revieweeId          String?
+  reviewee            User?     @relation("ReviewTarget", fields: [revieweeId], references: [id])
+  trainerId           String
+  trainer             User      @relation("ReviewTrainer", fields: [trainerId], references: [id])
+  rating              Int
+  comment             String?
+  isVisible           Boolean   @default(true)
+  trainerResponse     String?
+  trainerRespondedAt  DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@unique([bookingId, reviewerId])
+  @@index([trainerId, createdAt])
+  @@index([reviewerId])
+  @@index([revieweeId])
+}
+
+// ---------------------------------------------------------------------------
+// Communication
+// ---------------------------------------------------------------------------
+
+model Conversation {
+  id        String           @id @default(uuid())
+  type      ConversationType @default(DIRECT)
+  title     String?
+  bookingId String?          @unique
+  booking   Booking?         @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  participants ConversationParticipant[]
+  messages     Message[]
+}
+
+model ConversationParticipant {
+  id             String       @id @default(uuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  joinedAt       DateTime     @default(now())
+  leftAt         DateTime?
+  lastReadAt     DateTime?
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  messageType    String       @default("TEXT")
+  content        String?
+  fileUrl        String?
+  metadata       Json?
+  isRead         Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+}
+
+// ---------------------------------------------------------------------------
+// Payments & Wallet
+// ---------------------------------------------------------------------------
+
+model Wallet {
+  id                   String       @id @default(uuid())
+  userId               String       @unique
+  user                 User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  balance              Decimal      @default(0) @db.Decimal(12, 2)
+  currency             String       @default("KES")
+  status               WalletStatus @default(ACTIVE)
+  starterCreditGranted Boolean      @default(false)
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  ledgerEntries LedgerEntry[]
+  escrowsPaid   EscrowAccount[] @relation("PayerWallet")
+
+  @@index([userId])
+}
+
+model WalletTransaction {
+  id             String   @id @default(uuid())
+  referenceType  String
+  referenceId    String?
+  idempotencyKey String?  @unique
+  description    String?
+  metadata       Json?
+  createdAt      DateTime @default(now())
+
+  ledgerEntries LedgerEntry[]
+
+  @@index([referenceType])
+  @@index([createdAt])
+}
+
+model LedgerEntry {
+  id            String            @id @default(uuid())
+  walletId      String
+  wallet        Wallet            @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  transactionId String
+  transaction   WalletTransaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  entryType     EntryType
+  amount        Decimal           @db.Decimal(12, 2)
+  createdAt     DateTime          @default(now())
+
+  @@index([walletId, createdAt])
+  @@index([transactionId])
+}
+
+model EscrowAccount {
+  id             String       @id @default(uuid())
+  bookingId      String       @unique
+  booking        Booking      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  payerWalletId  String
+  payerWallet    Wallet       @relation("PayerWallet", fields: [payerWalletId], references: [id])
+  amount         Decimal      @db.Decimal(12, 2)
+  currency       String       @default("KES")
+  status         EscrowStatus @default(CREATED)
+  fundedAt       DateTime?
+  releasedAt     DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  statusLogs       EscrowStatusLog[]
+  commissionRecord CommissionRecord?
+
+  @@index([status])
+}
+
+model EscrowStatusLog {
+  id         String        @id @default(uuid())
+  escrowId   String
+  escrow     EscrowAccount @relation(fields: [escrowId], references: [id], onDelete: Cascade)
+  fromStatus String?
+  toStatus   String
+  reason     String?
+  changedBy  String?
+  createdAt  DateTime      @default(now())
+
+  @@index([escrowId, createdAt])
+}
+
+model Payment {
+  id                String          @id @default(uuid())
+  userId            String
+  user              User            @relation(fields: [userId], references: [id])
+  amount            Decimal         @db.Decimal(12, 2)
+  currency          String          @default("KES")
+  provider          PaymentProvider
+  providerReference String?
+  status            PaymentStatus   @default(PENDING)
+  metadata          Json?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([userId, status])
+  @@index([status])
+}
+
+// ---------------------------------------------------------------------------
+// Commissions
+// ---------------------------------------------------------------------------
+
+model CommissionRule {
+  id               String   @id @default(uuid())
+  name             String
+  minAmount        Decimal  @db.Decimal(12, 2)
+  maxAmount        Decimal  @db.Decimal(12, 2)
+  commissionRate   Decimal  @db.Decimal(5, 4)
+  subscriptionTier String?
+  trainerType      String?  // PROFESSIONAL, VOCATIONAL, null (both)
+  orgId            String?  // if set, rule applies only to this org
+  isGlobal         Boolean  @default(true) // true = platform-wide
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  records CommissionRecord[]
+
+  @@index([isActive])
+  @@index([orgId])
+}
+
+model CommissionRecord {
+  id                  String         @id @default(uuid())
+  bookingId           String         @unique
+  booking             Booking        @relation(fields: [bookingId], references: [id])
+  escrowId            String         @unique
+  escrow              EscrowAccount  @relation(fields: [escrowId], references: [id])
+  bookingAmount       Decimal        @db.Decimal(12, 2)
+  commissionRate      Decimal        @db.Decimal(5, 4)
+  commissionAmount    Decimal        @db.Decimal(12, 2)
+  trainerPayoutAmount Decimal        @db.Decimal(12, 2)
+  ruleId              String
+  rule                CommissionRule @relation(fields: [ruleId], references: [id])
+  createdAt           DateTime       @default(now())
+
+  @@index([bookingId])
+}
+
+// ---------------------------------------------------------------------------
+// Subscriptions
+// ---------------------------------------------------------------------------
+
+model SubscriptionPlan {
+  id              String   @id @default(uuid())
+  name            String   @unique
+  description     String?
+  price           Decimal  @default(0) @db.Decimal(12, 2)
+  currency        String   @default("KES")
+  durationDays    Int      @default(30)
+  billingCycle    String   @default("monthly") // monthly, quarterly, yearly, custom
+  features        Json?
+  maxBookings     Int?     // null = unlimited
+  maxTeamMembers  Int?     // null = unlimited
+  commissionRate  Decimal? @db.Decimal(5, 4) // override commission for this plan
+  trainerType     String?  // PROFESSIONAL, VOCATIONAL, null (both)
+  isActive        Boolean  @default(true)
+  isGlobal        Boolean  @default(true)  // true = available to everyone
+  orgId           String?  // if set, plan is exclusive to this org
+  sortOrder       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  subscriptions Subscription[]
+
+  @@index([isActive])
+  @@index([orgId])
+  @@index([trainerType])
+}
+
+model Subscription {
+  id        String             @id @default(uuid())
+  userId    String
+  user      User               @relation(fields: [userId], references: [id])
+  planId    String
+  plan      SubscriptionPlan   @relation(fields: [planId], references: [id])
+  status    SubscriptionStatus @default(ACTIVE)
+  startDate DateTime
+  endDate   DateTime
+  autoRenew Boolean            @default(false)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  @@index([userId, status])
+  @@index([status])
+}
+
+// ---------------------------------------------------------------------------
+// Disputes
+// ---------------------------------------------------------------------------
+
+model Dispute {
+  id            String        @id @default(uuid())
+  bookingId     String
+  booking       Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  raisedById    String
+  raisedBy      User          @relation("DisputeRaiser", fields: [raisedById], references: [id])
+  againstId     String
+  against       User          @relation("DisputeAgainst", fields: [againstId], references: [id])
+  reason        String
+  category      DisputeCategory @default(OTHER)
+  description   String?
+  status        DisputeStatus @default(OPEN)
+  resolution    String?
+  resolvedById  String?
+  resolvedBy    User?         @relation("DisputeResolver", fields: [resolvedById], references: [id])
+  resolvedAt    DateTime?
+  // Assignment — who on the team is handling this dispute
+  assignedToId  String?
+  assignedTo    User?         @relation("DisputeAssignee", fields: [assignedToId], references: [id])
+  assignedAt    DateTime?
+  assignedById  String?
+  // Escalation path (1 = L1 support, 2 = finance/admin, 3 = super-admin)
+  escalationLevel Int          @default(1)
+  escalatedAt     DateTime?
+  escalatedById   String?
+  escalationNote  String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  comments      DisputeComment[]
+  slaAssignment SlaAssignment?
+
+  @@index([status])
+  @@index([raisedById])
+  @@index([bookingId])
+  @@index([assignedToId])
+  @@index([escalationLevel])
+}
+
+model DisputeComment {
+  id          String   @id @default(uuid())
+  disputeId   String
+  dispute     Dispute  @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+  authorId    String
+  author      User     @relation("DisputeCommenter", fields: [authorId], references: [id])
+  content     String
+  attachments Json?    // array of { url, name, mimeType }
+  isInternal  Boolean  @default(false) // true = visible to admins+assignees only (not to parties)
+  createdAt   DateTime @default(now())
+
+  @@index([disputeId])
+  @@index([authorId])
+}
+
+// ---------------------------------------------------------------------------
+// SLA (Service Level Agreements)
+// ---------------------------------------------------------------------------
+
+model SlaPolicy {
+  id                       String        @id @default(uuid())
+  name                     String
+  description              String?
+  priority                 SlaPriority   @default(MEDIUM)
+  firstResponseHours       Int
+  resolutionHours          Int
+  warningPercent           Int           @default(80)
+  autoEscalate             Boolean       @default(true)
+  isActive                 Boolean       @default(true)
+  // Who gets the warning notification when warningPercent is hit
+  warningNotifyRole        String        @default("SUPPORT")
+  // Who gets escalated to on first-response breach
+  firstResponseEscalateTo  String        @default("SUPPORT")
+  // Who gets escalated to on resolution breach
+  resolutionEscalateTo     String        @default("FINANCE_ADMIN")
+  createdById              String
+  createdBy                User          @relation("SlaPolicyCreator", fields: [createdById], references: [id])
+  createdAt                DateTime      @default(now())
+  updatedAt                DateTime      @updatedAt
+  assignments              SlaAssignment[]
+
+  @@index([priority])
+  @@index([isActive])
+}
+
+model SlaAssignment {
+  id                    String      @id @default(uuid())
+  disputeId             String      @unique
+  dispute               Dispute     @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+  policyId              String
+  policy                SlaPolicy   @relation(fields: [policyId], references: [id])
+  status                SlaStatus   @default(ACTIVE)
+  firstResponseDue      DateTime
+  resolutionDue         DateTime
+  firstResponseAt       DateTime?
+  resolvedAt            DateTime?
+  firstResponseBreached Boolean     @default(false)
+  resolutionBreached    Boolean     @default(false)
+  warningSentAt         DateTime?
+  pausedAt              DateTime?
+  pausedDurationMins    Int         @default(0)
+  assignedById          String?
+  assignedBy            User?       @relation("SlaAssignmentCreator", fields: [assignedById], references: [id])
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  escalations           SlaEscalation[]
+
+  @@index([status])
+  @@index([disputeId])
+  @@index([resolutionDue])
+}
+
+model SlaEscalation {
+  id            String        @id @default(uuid())
+  assignmentId  String
+  assignment    SlaAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  reason        String
+  escalatedTo   String
+  notifiedAt    DateTime      @default(now())
+  resolvedAt    DateTime?
+  createdAt     DateTime      @default(now())
+
+  @@index([assignmentId])
+}
+
+// ---------------------------------------------------------------------------
+// Notifications
+// ---------------------------------------------------------------------------
+
+model Notification {
+  id        String              @id @default(uuid())
+  userId    String
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String              @default("GENERAL")
+  channel   NotificationChannel @default(IN_APP)
+  title     String
+  message   String
+  metadata  Json?
+  status    NotificationStatus  @default(PENDING)
+  readAt    DateTime?
+  sentAt    DateTime?
+  createdAt DateTime            @default(now())
+
+  @@index([userId, createdAt])
+  @@index([status])
+}
+
+// ---------------------------------------------------------------------------
+// Audit / System
+// ---------------------------------------------------------------------------
+
+model AuditLog {
+  id         String        @id @default(uuid())
+  userId     String?
+  user       User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action     String
+  resource   String?
+  resourceId String?
+  oldValue   Json?
+  newValue   Json?
+  severity   AuditSeverity @default(INFO)
+  ipAddress  String?
+  userAgent  String?
+  metadata   Json?
+  createdAt  DateTime      @default(now())
+
+  @@index([resource, resourceId])
+  @@index([userId, createdAt])
+  @@index([action])
+}
+
+model SystemSetting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     Json
+  category  String?
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@index([category])
+}
+
+// ---------------------------------------------------------------------------
+// Departments (Organizational Structure within Trainer Firms)
+// ---------------------------------------------------------------------------
+
+model Department {
+  id          String   @id @default(uuid())
+  firmId      String
+  firm        User     @relation("FirmDepartments", fields: [firmId], references: [id])
+  name        String
+  description String?
+  leadId      String?
+  lead        User?    @relation("DepartmentLead", fields: [leadId], references: [id])
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members     TeamMember[]
+  slots       AvailabilitySlot[]
+
+  @@index([firmId])
+  @@index([leadId])
+}
+
+// ---------------------------------------------------------------------------
+// Team Management (Trainer Firms)
+// ---------------------------------------------------------------------------
+
+model TeamMember {
+  id             String         @id @default(uuid())
+  firmId         String
+  firm           User           @relation("FirmMembers", fields: [firmId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User           @relation("MemberUser", fields: [userId], references: [id], onDelete: Cascade)
+  role           TeamMemberRole @default(CONSULTANT)
+  title          String?
+  specialization String?
+  isActive       Boolean        @default(true)
+  invitedById    String
+  invitedBy      User           @relation("InvitedByUser", fields: [invitedById], references: [id])
+  invitedAt      DateTime       @default(now())
+  joinedAt       DateTime?
+  departmentId   String?
+  department     Department?    @relation(fields: [departmentId], references: [id])
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@unique([firmId, userId])
+  @@index([firmId])
+  @@index([userId])
+  @@index([departmentId])
+}
+
+model TeamInvite {
+  id        String       @id @default(uuid())
+  firmId    String
+  firm      User         @relation("FirmInvites", fields: [firmId], references: [id], onDelete: Cascade)
+  email     String
+  role      TeamMemberRole @default(CONSULTANT)
+  token     String       @unique
+  status    InviteStatus @default(PENDING)
+  expiresAt DateTime
+  createdAt DateTime     @default(now())
+
+  @@index([firmId])
+  @@index([email])
+  @@index([token])
+}
+
+// ---------------------------------------------------------------------------
+// Favorites / Wishlist
+// ---------------------------------------------------------------------------
+
+model Favorite {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trainerId String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, trainerId])
+  @@index([userId])
+  @@index([trainerId])
+}
+
+// ---------------------------------------------------------------------------
+// Follows (users follow trainers)
+// ---------------------------------------------------------------------------
+
+model Follow {
+  id          String   @id @default(uuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followingId])
+  @@index([followerId])
+}
+
+// ---------------------------------------------------------------------------
+// Courses / Pre-recorded Content Marketplace
+// ---------------------------------------------------------------------------
+
+model Course {
+  id           String       @id @default(uuid())
+  instructorId String
+  instructor   User         @relation("CourseInstructor", fields: [instructorId], references: [id])
+  title        String
+  description  String?
+  thumbnail    String?
+  price        Decimal      @default(0) @db.Decimal(12, 2)
+  currency     String       @default("KES")
+  category     String?
+  level        String?      // BEGINNER, INTERMEDIATE, ADVANCED
+  duration     Int?         // total minutes
+  status       CourseStatus @default(DRAFT)
+  rating       Decimal      @default(0) @db.Decimal(3, 2)
+  totalEnrolled Int         @default(0)
+  tags         String[]     @default([])
+  settings     Json?        // { aiDetection, readingMetrics, proctoring, accessType, accessDays }
+  certConfig   Json?        // { autoIssue, minPassingGrade, gradeScale, templateStyle, customTemplateUrl, signatoryName, signatoryTitle, certNumberPrefix }
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  lessons      CourseLesson[]
+  enrollments  Enrollment[]
+  milestones   CourseMilestone[]
+  certificates CourseCertificate[]
+
+  @@index([instructorId])
+  @@index([status])
+  @@index([category])
+}
+
+model CourseLesson {
+  id           String   @id @default(uuid())
+  courseId      String
+  course       Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  milestoneId  String?
+  milestone    CourseMilestone? @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
+  title        String
+  description  String?
+  contentType  String   @default("VIDEO") // VIDEO, TEXT, QUIZ, ASSIGNMENT
+  videoUrl     String?
+  textContent  String?  // rich text for TEXT type lessons
+  duration     Int?     // minutes
+  sortOrder    Int      @default(0)
+  isFree       Boolean  @default(false)
+  episodeNumber Int?    // episode/session number within the course
+  timeLimitMin  Int?    // quiz timer in minutes; null = no limit
+  maxAttempts   Int?    // null = unlimited retakes
+  createdAt    DateTime @default(now())
+
+  questions    LessonQuestion[]
+  assessments  LessonAssessment[]
+  submissions  LessonSubmission[]
+
+  @@index([courseId, sortOrder])
+  @@index([milestoneId])
+}
+
+model LessonQuestion {
+  id          String   @id @default(uuid())
+  lessonId    String
+  lesson      CourseLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  question    String
+  questionType String  @default("MULTIPLE_CHOICE") // MULTIPLE_CHOICE, TRUE_FALSE, SHORT_ANSWER, ESSAY
+  options     Json?    // ["Option A", "Option B", "Option C", "Option D"] for MCQ
+  correctAnswer String? // index or text of correct answer
+  explanation String?  // explanation shown after answering
+  points      Int      @default(1)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  answers     QuestionAnswer[]
+
+  @@index([lessonId, sortOrder])
+}
+
+model QuestionAnswer {
+  id          String   @id @default(uuid())
+  questionId  String
+  question    LessonQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  userId      String
+  answer      String
+  isCorrect   Boolean  @default(false)
+  score       Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  @@unique([questionId, userId])
+  @@index([userId])
+}
+
+model Enrollment {
+  id          String           @id @default(uuid())
+  userId      String
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId     String
+  course      Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  status      EnrollmentStatus @default(ACTIVE)
+  progress    Int              @default(0) // percentage 0-100
+  completedAt DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  certificate CourseCertificate?
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+}
+
+// ---------------------------------------------------------------------------
+// Institutional Affiliations
+// ---------------------------------------------------------------------------
+
+model InstitutionalAffiliation {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  institutionName String
+  role            String?  // e.g. "Lecturer", "Fellow", "Certified Trainer"
+  startDate       DateTime?
+  endDate         DateTime?
+  isCurrent       Boolean  @default(true)
+  documentUrl     String?
+  verified        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// Invoices
+// ---------------------------------------------------------------------------
+
+model Invoice {
+  id              String        @id @default(uuid())
+  invoiceNumber   String        @unique
+  issuerId        String
+  issuer          User          @relation("InvoiceIssuer", fields: [issuerId], references: [id])
+  recipientId     String
+  recipient       User          @relation("InvoiceRecipient", fields: [recipientId], references: [id])
+  bookingId       String?
+  courseId         String?
+  subscriptionId  String?
+  amount          Decimal       @db.Decimal(12, 2)
+  tax             Decimal       @default(0) @db.Decimal(12, 2)
+  total           Decimal       @db.Decimal(12, 2)
+  currency        String        @default("KES")
+  status          InvoiceStatus @default(DRAFT)
+  description     String?
+  lineItems       Json?         // [{ description, qty, unitPrice, total }]
+  dueDate         DateTime?
+  paidAt          DateTime?
+  issuedAt        DateTime?
+  metadata        Json?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([issuerId])
+  @@index([recipientId])
+  @@index([status])
+  @@index([bookingId])
+}
+
+// ---------------------------------------------------------------------------
+// Payouts (Trainer withdrawal lifecycle)
+// ---------------------------------------------------------------------------
+
+model Payout {
+  id              String        @id @default(uuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id])
+  amount          Decimal       @db.Decimal(12, 2)
+  fee             Decimal       @default(0) @db.Decimal(12, 2)
+  netAmount       Decimal       @db.Decimal(12, 2)
+  currency        String        @default("KES")
+  method          PayoutMethod  @default(MPESA)
+  status          PayoutStatus  @default(REQUESTED)
+  destination     String?       // phone number or bank account
+  reference       String?       // M-Pesa receipt or bank ref
+  processedAt     DateTime?
+  approvedBy      String?
+  rejectedReason  String?
+  metadata        Json?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Commission Overrides (per-trainer and per-org)
+// ---------------------------------------------------------------------------
+
+model CommissionOverride {
+  id              String    @id @default(uuid())
+  trainerId       String
+  orgId           String?
+  customRate      Decimal   @db.Decimal(5, 4)
+  reason          String?
+  validFrom       DateTime  @default(now())
+  validUntil      DateTime?
+  isActive        Boolean   @default(true)
+  createdBy       String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([trainerId])
+  @@index([orgId])
+  @@index([isActive])
+}
+
+// ---------------------------------------------------------------------------
+// Scheduled Reminders
+// ---------------------------------------------------------------------------
+
+model ScheduledReminder {
+  id          String         @id @default(uuid())
+  userId      String
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        ReminderType   @default(CUSTOM)
+  channel     NotificationChannel @default(EMAIL)
+  title       String
+  message     String
+  scheduledAt DateTime
+  sentAt      DateTime?
+  status      ReminderStatus @default(SCHEDULED)
+  metadata    Json?
+  createdAt   DateTime       @default(now())
+
+  @@index([userId])
+  @@index([scheduledAt, status])
+}
+
+// ---------------------------------------------------------------------------
+// Milestones (scoped escrow releases + attendance)
+// ---------------------------------------------------------------------------
+
+model Milestone {
+  id           String          @id @default(uuid())
+  bookingId    String
+  title        String
+  description  String?
+  amount       Decimal         @db.Decimal(12, 2)
+  orderIndex   Int             @default(0)
+  status       MilestoneStatus @default(PENDING)
+  dueDate      DateTime?
+  deliveredAt  DateTime?
+  releasedAt   DateTime?
+  releasedBy   String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  booking     Booking             @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  attendance  AttendanceRecord[]
+
+  @@index([bookingId])
+  @@index([status])
+}
+
+model AttendanceRecord {
+  id             String          @id @default(uuid())
+  bookingId      String
+  milestoneId    String?
+  userId         String
+  checkedInAt    DateTime?
+  checkedOutAt   DateTime?
+  presenceStatus PresenceStatus  @default(PRESENT)
+  note           String?
+  createdAt      DateTime        @default(now())
+
+  booking   Booking    @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  milestone Milestone? @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
+  user      User       @relation("UserAttendance", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([bookingId, milestoneId, userId])
+  @@index([userId])
+  @@index([milestoneId])
+}
+
+// ---------------------------------------------------------------------------
+// Needs Profile / Onboarding Recommendations
+// ---------------------------------------------------------------------------
+
+model UserNeedsProfile {
+  id                    String           @id @default(uuid())
+  userId                String           @unique
+  goals                 String[]         @default([])       // e.g. ["career-change", "upskill", "certification"]
+  currentLevel          ExperienceLevel?
+  preferredSessionTypes String[]         @default([])       // VIRTUAL | PHYSICAL | HYBRID
+  categoriesInterest    String[]         @default([])       // category names the user cares about
+  problemStatement      String?          @db.Text
+  budgetMin             Decimal?         @db.Decimal(12, 2)
+  budgetMax             Decimal?         @db.Decimal(12, 2)
+  timeframeWeeks        Int?                                 // target learning horizon
+  urgency               String?                              // "low" | "medium" | "high"
+  completedAt           DateTime?
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// Course Milestones + Assessments + Submissions (grading rubric)
+// ---------------------------------------------------------------------------
+
+model CourseMilestone {
+  id            String   @id @default(uuid())
+  courseId      String
+  title         String
+  description   String?  @db.Text
+  orderIndex    Int      @default(0)
+  passingScore  Int      @default(70)   // percentage
+  weight        Int      @default(1)    // weight in final grade calc
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  course      Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons     CourseLesson[]                                        // optional lesson grouping
+  submissions LessonSubmission[]
+
+  @@index([courseId])
+}
+
+enum AssessmentType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  TEXT
+  FILE_UPLOAD
+  CHECKBOX
+}
+
+model LessonAssessment {
+  id           String         @id @default(uuid())
+  lessonId     String
+  question     String         @db.Text
+  type         AssessmentType @default(MULTIPLE_CHOICE)
+  options      Json?                                  // array for MC/checkbox
+  correctAnswer Json?                                 // string or array
+  points       Int            @default(10)
+  orderIndex   Int            @default(0)
+  explanation  String?        @db.Text               // shown during review
+  createdAt    DateTime       @default(now())
+
+  lesson CourseLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@index([lessonId])
+}
+
+model LessonSubmission {
+  id                String   @id @default(uuid())
+  userId            String
+  lessonId          String
+  courseMilestoneId String?
+  answers           Json                              // { [assessmentId]: answer }
+  score             Int      @default(0)              // 0-100
+  passed            Boolean  @default(false)
+  feedback          String?  @db.Text
+  submittedAt       DateTime @default(now())
+  gradedAt          DateTime?
+  gradedById        String?
+
+  user      User             @relation("UserSubmissions", fields: [userId], references: [id], onDelete: Cascade)
+  lesson    CourseLesson     @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  milestone CourseMilestone? @relation(fields: [courseMilestoneId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([lessonId])
+  @@unique([userId, lessonId])
+}
+
+// ---------------------------------------------------------------------------
+// Course Completion Certificates
+// ---------------------------------------------------------------------------
+
+enum CertificateStatus {
+  ISSUED
+  REVOKED
+}
+
+model CourseCertificate {
+  id                String            @id @default(uuid())
+  courseId          String
+  userId            String
+  enrollmentId      String?           @unique
+  certificateNumber String            @unique       // e.g. SKS-CERT-2026-00001
+  verificationCode  String            @unique       // short slug for public verify URL
+  finalGrade        Decimal?          @db.Decimal(5, 2)
+  status            CertificateStatus @default(ISSUED)
+  templateUrl       String?                          // optional branded template asset
+  metadata          Json?                            // {instructorName, courseTitle, hours, etc.}
+  issuedAt          DateTime          @default(now())
+  revokedAt         DateTime?
+  revokedBy         String?
+  revokedReason     String?
+
+  course     Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user       User        @relation("UserCertificates", fields: [userId], references: [id], onDelete: Cascade)
+  enrollment Enrollment? @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
+
+  @@unique([courseId, userId])
+  @@index([userId])
+  @@index([verificationCode])
+}
+
+model SessionRecording {
+  id          String   @id @default(uuid())
+  bookingId   String
+  url         String
+  durationSec Int?
+  startedAt   DateTime
+  endedAt     DateTime?
+  recordedBy  String?
+  transcribed Boolean  @default(false)
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+}
+
+// ---------------------------------------------------------------------------
+// Platform Holding Wallets (HOLDING | REVENUE | REFUND_RESERVE)
+// ---------------------------------------------------------------------------
+
+model PlatformWallet {
+  id        String   @id @default(cuid())
+  type      String   // HOLDING | REVENUE | REFUND_RESERVE
+  balance   Decimal  @default(0) @db.Decimal(15, 2)
+  currency  String   @default("KES")
+  updatedAt DateTime @updatedAt
+
+  @@unique([type])
+  @@index([type])
+}
+
+// =====================================================
+// UTEO — Recruitment Platform
+// =====================================================
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+  REMOTE
+  HYBRID
+}
+
+enum JobStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  CLOSED
+  EXPIRED
+}
+
+enum ApplicationStatus {
+  SUBMITTED
+  REVIEWED
+  SHORTLISTED
+  INTERVIEW
+  HIRED
+  REJECTED
+}
+
+enum CompanySize {
+  STARTUP
+  SMALL
+  MEDIUM
+  LARGE
+  ENTERPRISE
+}
+
+model Company {
+  id          String      @id @default(cuid())
+  name        String
+  description String?
+  industry    String?
+  website     String?
+  logoUrl     String?
+  size        CompanySize @default(STARTUP)
+  location    String?
+  isVerified  Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  recruiters  Recruiter[]
+  jobs        Job[]
+}
+
+model Recruiter {
+  id        String   @id @default(cuid())
+  userId    String
+  companyId String
+  title     String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  company   Company  @relation(fields: [companyId], references: [id])
+  @@unique([userId, companyId])
+}
+
+model Job {
+  id           String      @id @default(cuid())
+  companyId    String
+  postedById   String
+  title        String
+  description  String
+  requirements String?
+  location     String?
+  jobType      JobType     @default(FULL_TIME)
+  salaryMin    Float?
+  salaryMax    Float?
+  currency     String      @default("KES")
+  status       JobStatus   @default(ACTIVE)
+  expiresAt    DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  company      Company     @relation(fields: [companyId], references: [id])
+  postedBy     User        @relation("JobsPosted", fields: [postedById], references: [id])
+  jobSkills    JobSkill[]
+  applications Application[]
+  savedJobs    SavedJob[]
+}
+
+model JobSkill {
+  id      String @id @default(cuid())
+  jobId   String
+  skillId String
+  job     Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  skill   Skill  @relation(fields: [skillId], references: [id])
+  @@unique([jobId, skillId])
+}
+
+model SavedJob {
+  id        String   @id @default(cuid())
+  userId    String
+  jobId     String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  @@unique([userId, jobId])
+}
+
+model Application {
+  id          String            @id @default(cuid())
+  userId      String
+  jobId       String
+  status      ApplicationStatus @default(SUBMITTED)
+  coverLetter String?
+  resumeUrl   String?
+  notes       String?
+  appliedAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  user        User              @relation(fields: [userId], references: [id])
+  job         Job               @relation(fields: [jobId], references: [id])
+  @@unique([userId, jobId])
+}
+
+model JobInteraction {
+  id        String   @id @default(cuid())
+  userId    String
+  jobId     String
+  action    String   // view | click | save | apply | skip
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  @@index([userId])
+  @@index([jobId])
+}
+
+// ---------------------------------------------------------------------------
+// Uteo — Job Seeker Profile
+// ---------------------------------------------------------------------------
+
+model WorkExperience {
+  id          String    @id @default(cuid())
+  userId      String
+  company     String
+  title       String
+  location    String?
+  startDate   DateTime
+  endDate     DateTime?
+  isCurrent   Boolean   @default(false)
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Education {
+  id           String    @id @default(cuid())
+  userId       String
+  institution  String
+  degree       String
+  fieldOfStudy String?
+  startYear    Int
+  endYear      Int?
+  isCurrent    Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model JobSeekerProfile {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  headline     String?
+  bio          String?
+  location     String?
+  phone        String?
+  resumeUrl    String?
+  portfolioUrl String?
+  linkedinUrl  String?
+  githubUrl    String?
+  openToWork   Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserSkill {
+  id          String   @id @default(cuid())
+  userId      String
+  skillId     String
+  proficiency String   @default("INTERMEDIATE") // BEGINNER | INTERMEDIATE | ADVANCED | EXPERT
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill       Skill    @relation(fields: [skillId], references: [id])
+
+  @@unique([userId, skillId])
+  @@index([userId])
+}

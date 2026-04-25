@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: uteo-postgres
+    restart: unless-stopped
+    ports:
+      - '5452:5432'
+    environment:
+      POSTGRES_USER: uteo
+      POSTGRES_PASSWORD: uteo123
+      POSTGRES_DB: uteo_db
+    volumes:
+      - uteo_pg_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: uteo-redis
+    restart: unless-stopped
+    ports:
+      - '6352:6379'
+    volumes:
+      - uteo_redis_data:/data
+
+volumes:
+  uteo_pg_data:
+  uteo_redis_data:

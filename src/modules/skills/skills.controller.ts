@@ -8,7 +8,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 export class SkillsController {
   constructor(private readonly svc: SkillsService) {}
   @Public() @Get() findAll(@Query() dto: ListSkillsDto) { return this.svc.findAll(dto); }
-  @Post() @UseGuards(RolesGuard) @Roles('ADMIN','SUPER_ADMIN') create(@Body() dto: CreateSkillDto) { return this.svc.create(dto); }
+  @Post() create(@Body() dto: CreateSkillDto) { return this.svc.create(dto); }
   @Patch(':id') @UseGuards(RolesGuard) @Roles('ADMIN','SUPER_ADMIN') update(@Param('id') id: string, @Body() dto: UpdateSkillDto) { return this.svc.update(id, dto); }
   @Delete(':id') @UseGuards(RolesGuard) @Roles('ADMIN','SUPER_ADMIN') remove(@Param('id') id: string) { return this.svc.delete(id); }
 }

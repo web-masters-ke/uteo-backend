@@ -33,6 +33,7 @@ export class ProfileService {
       select: {
         id: true,
         email: true,
+        phone: true,
         firstName: true,
         lastName: true,
         name: true,
@@ -41,6 +42,23 @@ export class ProfileService {
         emailVerified: true,
         createdAt: true,
         jobSeekerProfile: true,
+        trainerProfile: {
+          select: {
+            bio: true,
+            location: true,
+            firmName: true,
+            specialization: true,
+            linkedinUrl: true,
+            isHiring: true,
+          },
+        },
+        recruiter: {
+          include: {
+            company: {
+              select: { id: true, name: true, logoUrl: true, website: true, description: true },
+            },
+          },
+        },
         workExperience: {
           orderBy: [{ isCurrent: 'desc' }, { startDate: 'desc' }],
         },
@@ -50,6 +68,9 @@ export class ProfileService {
         userSkills: {
           include: { skill: { select: { id: true, name: true, category: true } } },
           orderBy: { createdAt: 'asc' },
+        },
+        _count: {
+          select: { jobsPosted: true, applications: true },
         },
       },
     });
@@ -101,13 +122,33 @@ export class ProfileService {
   }
 
   // ---------------------------------------------------------------------------
-  // Update job seeker profile fields
+  // Update profile — splits fields between User, jobSeekerProfile, trainerProfile
   // ---------------------------------------------------------------------------
   async updateProfile(userId: string, dto: UpdateProfileDto) {
+    const { firstName, lastName, avatar, isHiring, ...profileFields } = dto;
+
+    // Update User-level fields if provided
+    const userUpdate: any = {};
+    if (firstName !== undefined) userUpdate.firstName = firstName;
+    if (lastName !== undefined) userUpdate.lastName = lastName;
+    if (avatar !== undefined) userUpdate.avatar = avatar;
+    if (Object.keys(userUpdate).length > 0) {
+      await this.prisma.user.update({ where: { id: userId }, data: userUpdate });
+    }
+
+    // Update trainerProfile.isHiring if provided
+    if (isHiring !== undefined) {
+      await this.prisma.trainerProfile.updateMany({
+        where: { userId },
+        data: { isHiring },
+      });
+    }
+
+    // Update jobSeekerProfile fields
     return this.prisma.jobSeekerProfile.upsert({
       where: { userId },
-      create: { userId, ...dto },
-      update: dto,
+      create: { userId, ...profileFields },
+      update: profileFields,
     });
   }
 
@@ -211,19 +252,32 @@ export class ProfileService {
   }
 
   async addSkill(userId: string, dto: AddUserSkillDto) {
-    const skill = await this.prisma.skill.findUnique({ where: { id: dto.skillId } });
-    if (!skill) throw new NotFoundException('Skill not found');
+    let skillId = dto.skillId;
+
+    if (!skillId) {
+      if (!dto.skillName) throw new NotFoundException('Provide skillId or skillName');
+      // Find or create the skill by name (case-insensitive match first)
+      const normalizedName = dto.skillName.trim();
+      const existing = await this.prisma.skill.findFirst({
+        where: { name: { equals: normalizedName, mode: 'insensitive' } },
+      });
+      if (existing) {
+        skillId = existing.id;
+      } else {
+        const created = await this.prisma.skill.create({
+          data: { name: normalizedName, isActive: true },
+        });
+        skillId = created.id;
+      }
+    } else {
+      const skill = await this.prisma.skill.findUnique({ where: { id: skillId } });
+      if (!skill) throw new NotFoundException('Skill not found');
+    }
 
     return this.prisma.userSkill.upsert({
-      where: { userId_skillId: { userId, skillId: dto.skillId } },
-      create: {
-        userId,
-        skillId: dto.skillId,
-        proficiency: dto.proficiency ?? 'INTERMEDIATE',
-      },
-      update: {
-        proficiency: dto.proficiency ?? 'INTERMEDIATE',
-      },
+      where: { userId_skillId: { userId, skillId } },
+      create: { userId, skillId, proficiency: dto.proficiency ?? 'INTERMEDIATE' },
+      update: { proficiency: dto.proficiency ?? 'INTERMEDIATE' },
       include: { skill: { select: { id: true, name: true, category: true } } },
     });
   }

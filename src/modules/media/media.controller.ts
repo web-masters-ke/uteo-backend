@@ -4,7 +4,7 @@ import { diskStorage } from 'multer';
 import { MediaService } from './media.service';
 import { S3Service } from '../../common/services/s3.service';
 
-const storage = diskStorage({ destination: '/tmp/ptak-uploads', filename: (_req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`) });
+const storage = diskStorage({ destination: '/tmp/uteo-uploads', filename: (_req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`) });
 
 @Controller('media')
 export class MediaController {

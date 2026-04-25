@@ -24,7 +24,7 @@ export class AuthService {
   private readonly refreshTtl: number;
 
   constructor(private readonly prisma: PrismaService) {
-    this.jwtSecret = process.env.JWT_SECRET || 'ptak-dev-secret-change-me';
+    this.jwtSecret = process.env.JWT_SECRET || 'uteo-dev-secret-2026';
     this.accessTtl = Number(process.env.JWT_ACCESS_TTL) || 86400;
     this.refreshTtl = Number(process.env.JWT_REFRESH_TTL) || 2592000;
   }

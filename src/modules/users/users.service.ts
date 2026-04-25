@@ -151,6 +151,26 @@ export class UsersService {
     return { message: 'User deleted' };
   }
 
+  async deleteSelf(userId: string) {
+    const user = await this.prisma.user.findFirst({ where: { id: userId, deletedAt: null } });
+    if (!user) throw new NotFoundException('User not found');
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { deletedAt: new Date(), status: 'DEACTIVATED' },
+    });
+    return { message: 'Account deleted' };
+  }
+
+  async deactivateSelf(userId: string) {
+    const user = await this.prisma.user.findFirst({ where: { id: userId, deletedAt: null } });
+    if (!user) throw new NotFoundException('User not found');
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { status: 'DEACTIVATED' },
+    });
+    return { message: 'Account deactivated' };
+  }
+
   async getStats() {
     const [total, byRole, byStatus] = await Promise.all([
       this.prisma.user.count({ where: { deletedAt: null } }),
@@ -176,6 +196,33 @@ export class UsersService {
         {},
       ),
     };
+  }
+
+  async getNotificationPreferences(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { notificationPrefs: true } });
+    const defaults = {
+      channels: { email: true, sms: true, push: true, inApp: true },
+      types: {
+        jobMatches: true, applicationUpdates: true, newMessages: true,
+        profileViews: true, interviewInvitations: true, jobAlerts: true,
+        newApplications: true, marketingPromotions: false,
+      },
+    };
+    const stored = (user?.notificationPrefs as Record<string, any>) ?? {};
+    return {
+      channels: { ...defaults.channels, ...(stored.channels ?? {}) },
+      types: { ...defaults.types, ...(stored.types ?? {}) },
+    };
+  }
+
+  async updateNotificationPreferences(userId: string, prefs: Record<string, any>) {
+    const current = await this.getNotificationPreferences(userId);
+    const merged = {
+      channels: { ...current.channels, ...(prefs.channels ?? {}) },
+      types: { ...current.types, ...(prefs.types ?? {}) },
+    };
+    await this.prisma.user.update({ where: { id: userId }, data: { notificationPrefs: merged } });
+    return merged;
   }
 
   async saveFcmToken(userId: string, token: string): Promise<{ message: string }> {

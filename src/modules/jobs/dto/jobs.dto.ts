@@ -8,9 +8,26 @@ import {
   MaxLength,
   IsDateString,
   Min,
+  ValidateNested,
 } from 'class-validator';
+import { Type as CvType } from 'class-transformer';
 import { Type } from 'class-transformer';
 import { JobType, JobStatus } from '@prisma/client';
+
+export class HiringStageDto {
+  @IsNumber()
+  order: number;
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  name: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  description?: string;
+}
 import { PaginationDto } from '../../../common/dto/pagination.dto';
 
 export class CreateJobDto {
@@ -68,6 +85,12 @@ export class CreateJobDto {
   @IsArray()
   @IsString({ each: true })
   skillIds?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @CvType(() => HiringStageDto)
+  hiringStages?: HiringStageDto[];
 }
 
 export class UpdateJobDto {
@@ -122,6 +145,12 @@ export class UpdateJobDto {
   @IsArray()
   @IsString({ each: true })
   skillIds?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @CvType(() => HiringStageDto)
+  hiringStages?: HiringStageDto[];
 }
 
 export class JobFilterDto extends PaginationDto {
@@ -132,7 +161,7 @@ export class JobFilterDto extends PaginationDto {
 
   @IsOptional()
   @IsString()
-  search?: string;
+  declare search?: string;
 
   // Alias sent by the browse-jobs page
   @IsOptional()

@@ -199,7 +199,7 @@ export class BreakoutRoomsService {
           bookingId,
           parentRoomId: null,
           name: 'Main room',
-          jaasRoomName: `ptak-session-${bookingShort}-main-${this.randomSuffix()}`,
+          jaasRoomName: `uteo-session-${bookingShort}-main-${this.randomSuffix()}`,
           participants: Array.from(universe),
           hostId: booking.trainerId,
           status: 'OPEN',
@@ -208,7 +208,7 @@ export class BreakoutRoomsService {
     }
 
     const bookingShort = booking.id.split('-')[0];
-    const jaasRoomName = `ptak-session-${bookingShort}-${this.slugify(dto.name)}-${this.randomSuffix()}`;
+    const jaasRoomName = `uteo-session-${bookingShort}-${this.slugify(dto.name)}-${this.randomSuffix()}`;
 
     const created = await this.prisma.videoSessionRoom.create({
       data: {
@@ -369,7 +369,7 @@ export class BreakoutRoomsService {
           bookingId,
           parentRoomId: null,
           name: 'Main Room',
-          jaasRoomName: `ptak-session-${bookingShort}-main-${this.randomSuffix()}`,
+          jaasRoomName: `uteo-session-${bookingShort}-main-${this.randomSuffix()}`,
           participants: Array.from(universe),
           hostId: booking.trainerId,
           status: 'OPEN',
@@ -391,7 +391,7 @@ export class BreakoutRoomsService {
       const idx = existing + i;
       const label = ALPHA[idx] ?? `${idx + 1}`;
       const name = dto.names?.[idx] || `Group ${label}`;
-      const jaasRoomName = `ptak-session-${bookingShort}-${this.slugify(name)}-${this.randomSuffix()}`;
+      const jaasRoomName = `uteo-session-${bookingShort}-${this.slugify(name)}-${this.randomSuffix()}`;
       const room = await this.prisma.videoSessionRoom.create({
         data: {
           bookingId,

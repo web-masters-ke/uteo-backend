@@ -53,6 +53,7 @@ import { JobsModule } from './modules/jobs/jobs.module';
 import { ApplicationsModule } from './modules/applications/applications.module';
 import { FeedModule } from './modules/feed/feed.module';
 import { ProfileModule } from './modules/profile/profile.module';
+import { AiModule } from './modules/ai/ai.module';
 
 @Module({
   imports: [
@@ -102,6 +103,7 @@ import { ProfileModule } from './modules/profile/profile.module';
     ApplicationsModule,
     FeedModule,
     ProfileModule,
+    AiModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: HttpExceptionFilterGlobal },

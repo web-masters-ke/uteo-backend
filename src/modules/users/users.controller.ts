@@ -31,7 +31,12 @@ export class UsersController {
 
   @Get('notification-preferences')
   getNotificationPreferences(@CurrentUser('id') userId: string) {
-    return { userId, email: true, sms: true, push: true, inApp: true };
+    return this.usersService.getNotificationPreferences(userId);
+  }
+
+  @Patch('notification-preferences')
+  updateNotificationPreferences(@CurrentUser('id') userId: string, @Body() body: Record<string, any>) {
+    return this.usersService.updateNotificationPreferences(userId, body);
   }
 
   @Post('fcm-token')
@@ -58,6 +63,16 @@ export class UsersController {
   @Get('me')
   getMe(@CurrentUser('id') userId: string) {
     return this.usersService.findOne(userId);
+  }
+
+  @Delete('me')
+  deleteSelf(@CurrentUser('id') userId: string) {
+    return this.usersService.deleteSelf(userId);
+  }
+
+  @Patch('me/deactivate')
+  deactivateSelf(@CurrentUser('id') userId: string) {
+    return this.usersService.deactivateSelf(userId);
   }
 
   @Get(':id')

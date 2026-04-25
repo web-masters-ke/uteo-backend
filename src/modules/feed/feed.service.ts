@@ -127,26 +127,34 @@ export class FeedService {
   // ── data helpers ──────────────────────────────────────────────────────────
 
   private async getUserSkillIds(userId: string): Promise<string[]> {
-    // Trainers have skills via TrainerProfile → TrainerSkill
+    // UserSkill covers all roles (job seekers + trainers)
+    const userSkills = await this.prisma.userSkill.findMany({
+      where: { userId },
+      select: { skillId: true },
+    });
+    if (userSkills.length > 0) return userSkills.map((s) => s.skillId);
+
+    // Fallback: trainer-only skill store (TrainerProfile → TrainerSkill)
     const trainerProfile = await this.prisma.trainerProfile.findUnique({
       where: { userId },
       include: { skills: { select: { skillId: true } } },
     });
-    if (trainerProfile) {
-      return trainerProfile.skills.map((s) => s.skillId);
-    }
-    return [];
+    return trainerProfile?.skills.map((s) => s.skillId) ?? [];
   }
 
   private async getUserLocation(userId: string): Promise<string | null> {
-    // Trainers have location on TrainerProfile
+    // JobSeekerProfile has location for CLIENT users
+    const seekerProfile = await this.prisma.jobSeekerProfile.findUnique({
+      where: { userId },
+      select: { location: true },
+    });
+    if (seekerProfile?.location) return seekerProfile.location;
+
+    // Fallback: TrainerProfile location fields
     const trainerProfile = await this.prisma.trainerProfile.findUnique({
       where: { userId },
       select: { location: true, city: true, county: true },
     });
-    if (trainerProfile) {
-      return trainerProfile.city ?? trainerProfile.county ?? trainerProfile.location ?? null;
-    }
-    return null;
+    return trainerProfile?.city ?? trainerProfile?.county ?? trainerProfile?.location ?? null;
   }
 }

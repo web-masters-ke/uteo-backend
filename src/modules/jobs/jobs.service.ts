@@ -30,12 +30,13 @@ export class JobsService {
       throw new ForbiddenException('You are not a recruiter for this company');
     }
 
-    const { skillIds, ...jobData } = dto;
+    const { skillIds, hiringStages, ...jobData } = dto;
     const job = await this.prisma.job.create({
       data: {
         ...jobData,
         postedById: userId,
         expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : undefined,
+        hiringStages: hiringStages ? JSON.parse(JSON.stringify(hiringStages)) : [],
         jobSkills: skillIds && skillIds.length > 0
           ? { create: skillIds.map((skillId) => ({ skillId })) }
           : undefined,
@@ -131,7 +132,7 @@ export class JobsService {
       if (!recruiter) throw new ForbiddenException('Not authorised to update this job');
     }
 
-    const { skillIds, ...updateData } = dto;
+    const { skillIds, hiringStages, ...updateData } = dto;
 
     const updated = await this.prisma.$transaction(async (tx) => {
       if (skillIds !== undefined) {
@@ -148,6 +149,7 @@ export class JobsService {
         data: {
           ...updateData,
           expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : undefined,
+          ...(hiringStages !== undefined ? { hiringStages: hiringStages as any } : {}),
         },
         include: {
           company: { select: { id: true, name: true, logoUrl: true } },
@@ -203,6 +205,106 @@ export class JobsService {
       },
     });
     return saved;
+  }
+
+  async getCandidates(jobId: string, recruiterId: string) {
+    const job = await this.prisma.job.findUnique({
+      where: { id: jobId },
+      include: { jobSkills: { include: { skill: { select: { id: true, name: true } } } } },
+    });
+    if (!job) throw new NotFoundException('Job not found');
+
+    const recruiter = await this.prisma.recruiter.findUnique({
+      where: { userId_companyId: { userId: recruiterId, companyId: job.companyId } },
+    });
+    if (!recruiter) throw new ForbiddenException('Not authorised to view candidates for this job');
+
+    const jobSkillIds = job.jobSkills.map((js) => js.skill.id);
+
+    // Fetch actual applicants for this job (applied, manually added, etc.)
+    const applications = await this.prisma.application.findMany({
+      where: { jobId },
+      orderBy: { appliedAt: 'desc' },
+      include: {
+        user: {
+          select: {
+            id: true, firstName: true, lastName: true, avatar: true, email: true,
+            userSkills: { include: { skill: { select: { id: true, name: true } } } },
+            jobSeekerProfile: { select: { headline: true, location: true, resumeUrl: true, portfolioUrl: true, linkedinUrl: true } },
+          },
+        },
+      },
+    });
+
+    const applicantUserIds = new Set(applications.map((a) => a.user.id));
+
+    const toCandidate = (user: typeof applications[0]['user'], applied: boolean) => {
+      const profile = user.jobSeekerProfile;
+      const candidateSkillIds = user.userSkills.map((us) => us.skillId);
+      const skillScore = jobSkillIds.length > 0
+        ? Math.round((candidateSkillIds.filter((id) => jobSkillIds.includes(id)).length / jobSkillIds.length) * 50)
+        : 0;
+      const locationScore = this.scoreLocation(profile?.location ?? null, job.location);
+      const profileScore = (profile?.headline ? 10 : 0) + (profile?.resumeUrl ? 10 : 0);
+      const matchedSkills = user.userSkills
+        .filter((us) => jobSkillIds.includes(us.skillId))
+        .map((us) => us.skill.name);
+      return {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        avatar: user.avatar,
+        email: user.email,
+        headline: profile?.headline ?? null,
+        location: profile?.location ?? null,
+        resumeUrl: profile?.resumeUrl ?? null,
+        portfolioUrl: profile?.portfolioUrl ?? null,
+        linkedinUrl: profile?.linkedinUrl ?? null,
+        skills: user.userSkills.map((us) => ({ id: us.skillId, name: us.skill.name })),
+        matchScore: applied ? 100 + skillScore : skillScore + locationScore + profileScore,
+        scoreBreakdown: { skillScore, locationScore, profileScore },
+        matchedSkills,
+        applied,
+      };
+    };
+
+    // Applicants first (sorted by most recent application)
+    const applicantItems = applications.map((a) => toCandidate(a.user, true));
+
+    // Open-to-work candidates, excluding those who already applied
+    const openToWork = await this.prisma.jobSeekerProfile.findMany({
+      where: { openToWork: true, user: { deletedAt: null, status: 'ACTIVE', id: { notIn: [...applicantUserIds] } } },
+      include: {
+        user: {
+          select: {
+            id: true, firstName: true, lastName: true, avatar: true, email: true,
+            userSkills: { include: { skill: { select: { id: true, name: true } } } },
+            jobSeekerProfile: { select: { headline: true, location: true, resumeUrl: true, portfolioUrl: true, linkedinUrl: true } },
+          },
+        },
+      },
+      take: 200,
+    });
+
+    const openItems = openToWork
+      .map((p) => toCandidate(p.user, false))
+      .sort((a, b) => b.matchScore - a.matchScore);
+
+    const items = [...applicantItems, ...openItems];
+    return { items, total: items.length };
+  }
+
+  private scoreLocation(candidateLocation: string | null, jobLocation: string | null | undefined): number {
+    if (!candidateLocation || !jobLocation) return 0;
+    const norm = (s: string) => s.toLowerCase().trim();
+    const c = norm(candidateLocation);
+    const j = norm(jobLocation);
+    if (c === j) return 20;
+    const cTokens = c.split(/[\s,]+/);
+    const jTokens = j.split(/[\s,]+/);
+    const overlap = cTokens.filter((t) => jTokens.includes(t)).length;
+    if (overlap > 0) return Math.round((overlap / Math.max(cTokens.length, jTokens.length)) * 20);
+    return 0;
   }
 
   async interact(jobId: string, userId: string, dto: InteractJobDto) {

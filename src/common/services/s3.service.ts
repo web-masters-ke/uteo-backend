@@ -24,7 +24,7 @@ export class S3Service {
       },
     });
     this.bucket = process.env.S3_BUCKET || 'universal-storage-account3-2026';
-    this.prefix = process.env.S3_PREFIX || 'ptak/';
+    this.prefix = process.env.S3_PREFIX || 'uteo/';
   }
 
   async upload(

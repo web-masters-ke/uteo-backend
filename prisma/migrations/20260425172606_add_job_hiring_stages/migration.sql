@@ -1,0 +1,1 @@
+ALTER TABLE "Job" ADD COLUMN "hiringStages" JSONB NOT NULL DEFAULT '[]';

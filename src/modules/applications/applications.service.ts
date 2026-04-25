@@ -3,7 +3,9 @@ import {
   NotFoundException,
   ForbiddenException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../common/services/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -12,6 +14,7 @@ import {
   CreateApplicationDto,
   UpdateApplicationStatusDto,
   ListApplicationsDto,
+  CreateManualApplicationDto,
 } from './dto/applications.dto';
 
 @Injectable()
@@ -33,9 +36,9 @@ export class ApplicationsService {
     // Record interaction
     await this.prisma.jobInteraction.create({
       data: { userId, jobId: dto.jobId, action: 'apply' },
-    }).catch(() => null); // fire-and-forget, non-blocking
+    }).catch(() => null);
 
-    return this.prisma.application.create({
+    const application = await this.prisma.application.create({
       data: {
         userId,
         jobId: dto.jobId,
@@ -50,6 +53,123 @@ export class ApplicationsService {
         },
       },
     });
+
+    // Notify job seeker — application submitted confirmation
+    this.notifications.createInApp(
+      userId,
+      'APPLICATION_SUBMITTED',
+      'Application submitted',
+      `Your application for "${job.title}" has been submitted. You'll hear back soon.`,
+      { jobId: job.id, jobTitle: job.title },
+    ).catch(() => null);
+
+    // Notify recruiter of new application
+    this.notifications.createInApp(
+      job.postedById,
+      'APPLICATION_RECEIVED',
+      'New application received',
+      `Someone applied for your "${job.title}" posting.`,
+      { jobId: job.id, jobTitle: job.title },
+    ).catch(() => null);
+
+    // Fire-and-forget: open a conversation between applicant and recruiter
+    this.seedApplicationThread(userId, job).catch(() => null);
+
+    return application;
+  }
+
+  async createManual(recruiterId: string, body: CreateManualApplicationDto) {
+    if (!body.candidateEmail?.trim()) throw new BadRequestException('Email is required');
+    if (!body.candidateFirstName?.trim()) throw new BadRequestException('First name is required');
+
+    // Find or create the candidate user
+    let candidate = await this.prisma.user.findUnique({ where: { email: body.candidateEmail.trim().toLowerCase() } });
+    if (!candidate) {
+      const rawPassword = body.candidatePassword && body.candidatePassword.length >= 6
+        ? body.candidatePassword
+        : Math.random().toString(36).slice(-10) + 'Aa1!';
+      const hash = await bcrypt.hash(rawPassword, 10);
+      candidate = await this.prisma.user.create({
+        data: {
+          email: body.candidateEmail.trim().toLowerCase(),
+          firstName: body.candidateFirstName.trim(),
+          lastName: body.candidateLastName?.trim() ?? '',
+          phone: body.candidatePhone?.trim() || undefined,
+          passwordHash: hash,
+          role: 'CLIENT',
+          status: 'ACTIVE',
+        },
+      });
+    }
+
+    // Create application if jobId supplied
+    if (body.jobId) {
+      const existing = await this.prisma.application.findUnique({
+        where: { userId_jobId: { userId: candidate.id, jobId: body.jobId } },
+      });
+      const status = body.status ?? 'SUBMITTED';
+      if (existing) {
+        await this.prisma.application.update({
+          where: { id: existing.id },
+          data: { status: status as any, notes: body.notes },
+        });
+        return { user: candidate, applicationId: existing.id, action: 'updated' };
+      }
+      const app = await this.prisma.application.create({
+        data: {
+          userId: candidate.id,
+          jobId: body.jobId,
+          status: status as any,
+          notes: body.notes,
+        },
+      });
+      return { user: candidate, applicationId: app.id, action: 'created' };
+    }
+
+    return { user: candidate, applicationId: null, action: candidate ? 'user_created' : 'user_found' };
+  }
+
+  private async seedApplicationThread(
+    applicantId: string,
+    job: { id: string; postedById: string; title: string },
+  ) {
+    // Reuse existing direct thread if one already exists between these two users
+    const existing = await this.prisma.conversation.findFirst({
+      where: {
+        type: 'DIRECT',
+        AND: [
+          { participants: { some: { userId: applicantId, leftAt: null } } },
+          { participants: { some: { userId: job.postedById, leftAt: null } } },
+        ],
+      },
+      select: { id: true },
+    });
+
+    const convId = existing?.id ?? (
+      await this.prisma.conversation.create({
+        data: {
+          type: 'DIRECT',
+          participants: {
+            create: [{ userId: applicantId }, { userId: job.postedById }],
+          },
+        },
+        select: { id: true },
+      })
+    ).id;
+
+    await this.prisma.message.create({
+      data: {
+        conversationId: convId,
+        senderId: applicantId,
+        messageType: 'APPLICATION',
+        content: `Applied for "${job.title}"`,
+      },
+    });
+
+    await this.prisma.conversation.update({
+      where: { id: convId },
+      data: { updatedAt: new Date() },
+    });
   }
 
   async findAll(userId: string, userRole: string, dto: ListApplicationsDto) {
@@ -59,11 +179,14 @@ export class ApplicationsService {
 
     if (dto.status) where.status = dto.status;
 
+    const recruiterProfiles = await this.prisma.recruiter.findMany({ where: { userId }, select: { companyId: true } });
+    const isRecruiter = recruiterProfiles.length > 0 || userRole === 'TRAINER';
+
     if (isAdmin) {
-      // Admin sees everything; optionally filter by jobId
+      // Admin sees everything; optionally filter by jobId or status
       if (dto.jobId) where.jobId = dto.jobId;
     } else if (dto.jobId) {
-      // Recruiter filtering by jobId — verify they own the company
+      // Recruiter filtering by jobId — verify they belong to the job's company
       const job = await this.prisma.job.findUnique({
         where: { id: dto.jobId },
         select: { companyId: true },
@@ -74,6 +197,15 @@ export class ApplicationsService {
       });
       if (!recruiter) throw new ForbiddenException('Not authorised to view these applications');
       where.jobId = dto.jobId;
+    } else if (isRecruiter) {
+      // Recruiter without jobId — all applications for any job at their company(ies)
+      if (recruiterProfiles.length > 0) {
+        const companyIds = recruiterProfiles.map((r) => r.companyId);
+        where.job = { companyId: { in: companyIds } };
+      } else {
+        // TRAINER role fallback — jobs they personally posted
+        where.job = { postedById: userId };
+      }
     } else {
       // Default: job seeker sees their own applications
       where.userId = userId;
@@ -141,7 +273,12 @@ export class ApplicationsService {
 
     const updated = await this.prisma.application.update({
       where: { id },
-      data: { status: dto.status, notes: dto.notes },
+      data: {
+        status: dto.status,
+        notes: dto.notes,
+        scheduledAt: dto.scheduledAt ? new Date(dto.scheduledAt) : undefined,
+        meetingLink: dto.meetingLink,
+      },
     });
 
     // Fire an in-app notification to the applicant about the status change.
@@ -160,12 +297,25 @@ export class ApplicationsService {
   }
 
   async withdraw(id: string, userId: string) {
-    const application = await this.prisma.application.findUnique({ where: { id } });
+    const application = await this.prisma.application.findUnique({
+      where: { id },
+      include: { job: { select: { id: true, title: true, postedById: true } } },
+    });
     if (!application) throw new NotFoundException('Application not found');
     if (application.userId !== userId) {
       throw new ForbiddenException('You can only withdraw your own applications');
     }
     await this.prisma.application.delete({ where: { id } });
+
+    // Notify recruiter the candidate withdrew
+    this.notifications.createInApp(
+      application.job.postedById,
+      'APPLICATION_WITHDRAWN',
+      'Application withdrawn',
+      `An applicant has withdrawn their application for "${application.job.title}".`,
+      { jobId: application.job.id, jobTitle: application.job.title },
+    ).catch(() => null);
+
     return { message: 'Application withdrawn' };
   }
 }

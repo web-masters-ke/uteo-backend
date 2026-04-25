@@ -1,11 +1,15 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../common/services/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { paginate } from '../../common/dto/pagination.dto';
 import { CreateConversationDto, SendMessageDto, UpdateMessageFileDto, ListConversationsDto, ListMessagesDto } from './dto/chat.dto';
 
 @Injectable()
 export class ChatService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async createOrGet(userId: string, dto: CreateConversationDto) {
     if (!dto.participantIds.includes(userId)) dto.participantIds.push(userId);
@@ -127,7 +131,7 @@ export class ChatService {
     if (!c) throw new NotFoundException('Conversation not found');
     if (!c.participants.some((p) => p.userId === userId)) throw new ForbiddenException('Not a participant');
 
-    return this.prisma.$transaction(async (tx) => {
+    const msg = await this.prisma.$transaction(async (tx) => {
       const msg = await tx.message.create({
         data: {
           conversationId: convId,
@@ -139,13 +143,36 @@ export class ChatService {
         include: { sender: { select: { id: true, firstName: true, lastName: true, avatar: true } } },
       });
       await tx.conversation.update({ where: { id: convId }, data: { updatedAt: new Date() } });
-      // Update sender's lastReadAt so their own sent message doesn't count as unread for them
       await tx.conversationParticipant.update({
         where: { conversationId_userId: { conversationId: convId, userId } },
         data: { lastReadAt: new Date() },
       }).catch(() => {});
       return msg;
     });
+
+    // Notify other participants — skip APPLICATION seed messages
+    const msgType = dto.messageType || 'TEXT';
+    if (msgType !== 'APPLICATION') {
+      const senderName = `${msg.sender.firstName} ${msg.sender.lastName}`;
+      const notifBody =
+        msgType === 'VOICE_NOTE' ? 'Sent a voice note' :
+        msgType === 'IMAGE' ? 'Sent an image' :
+        msgType === 'FILE' ? `Sent a file: ${dto.content ?? ''}` :
+        (dto.content ?? '').slice(0, 100);
+
+      const others = c.participants.filter((p) => p.userId !== userId);
+      for (const p of others) {
+        this.notifications.createInApp(
+          p.userId,
+          'NEW_MESSAGE',
+          `${senderName} sent you a message`,
+          notifBody,
+          { conversationId: convId },
+        ).catch(() => null);
+      }
+    }
+
+    return msg;
   }
 
   async getMessages(convId: string, userId: string, dto: ListMessagesDto) {

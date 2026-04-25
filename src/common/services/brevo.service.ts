@@ -17,7 +17,7 @@ export class BrevoService {
 
   constructor() {
     this.apiKey = process.env.BREVO_API_KEY || '';
-    this.fromEmail = process.env.BREVO_FROM_EMAIL || 'noreply@ptak.co.ke';
+    this.fromEmail = process.env.BREVO_FROM_EMAIL || 'noreply@uteo.co.ke';
     this.fromName = process.env.EMAIL_FROM_NAME || 'PTAK';
   }
 

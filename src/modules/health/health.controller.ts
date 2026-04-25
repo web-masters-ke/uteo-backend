@@ -16,7 +16,7 @@ export class HealthController {
   @Public()
   @Get('health')
   health() {
-    return { status: 'ok', service: 'ptak-api', timestamp: new Date().toISOString() };
+    return { status: 'ok', service: 'uteo-api', timestamp: new Date().toISOString() };
   }
 
   @Public()

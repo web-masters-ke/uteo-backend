@@ -15,6 +15,18 @@ import { Transform } from 'class-transformer';
 export class UpdateProfileDto {
   @IsOptional()
   @IsString()
+  firstName?: string;
+
+  @IsOptional()
+  @IsString()
+  lastName?: string;
+
+  @IsOptional()
+  @IsString()
+  avatar?: string;
+
+  @IsOptional()
+  @IsString()
   @MinLength(2)
   headline?: string;
 
@@ -49,6 +61,10 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsBoolean()
   openToWork?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  isHiring?: boolean;
 }
 
 export class AddExperienceDto {
@@ -178,8 +194,14 @@ export class UpdateEducationDto {
 }
 
 export class AddUserSkillDto {
+  @IsOptional()
   @IsString()
-  skillId: string;
+  skillId?: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  skillName?: string;
 
   @IsOptional()
   @IsIn(['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT'])

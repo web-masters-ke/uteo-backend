@@ -24,9 +24,9 @@ export class SkillsService {
   }
 
   async create(dto: CreateSkillDto) {
-    const ex = await this.prisma.skill.findUnique({ where: { name: dto.name } });
-    if (ex) throw new ConflictException('Skill already exists');
-    return this.prisma.skill.create({ data: { name: dto.name, category: dto.category, trainerType: dto.trainerType, description: dto.description, icon: dto.icon, level: dto.level, isActive: dto.isActive ?? true, demand: dto.demand, tags: dto.tags || [] } });
+    const ex = await this.prisma.skill.findFirst({ where: { name: { equals: dto.name.trim(), mode: 'insensitive' } } });
+    if (ex) return ex;
+    return this.prisma.skill.create({ data: { name: dto.name.trim(), category: dto.category, trainerType: dto.trainerType, description: dto.description, icon: dto.icon, level: dto.level, isActive: dto.isActive ?? true, demand: dto.demand, tags: dto.tags || [] } });
   }
 
   async update(id: string, dto: UpdateSkillDto) {

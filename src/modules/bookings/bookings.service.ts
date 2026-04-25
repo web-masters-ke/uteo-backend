@@ -145,7 +145,7 @@ export class BookingsService {
     // --- Generate Jitsi room(s) for virtual/hybrid sessions ---
     if (['VIRTUAL', 'HYBRID'].includes(dto.sessionType) && !dto.meetingLink) {
       const bookingShort = booking.id.split('-')[0];
-      const mainJaasName = `ptak-session-${bookingShort}-main-${randomSuffix()}`;
+      const mainJaasName = `uteo-session-${bookingShort}-main-${randomSuffix()}`;
       const mainUrl = buildJaasUrl(mainJaasName);
 
       await this.prisma.booking.update({ where: { id: booking.id }, data: { meetingLink: mainUrl } });
@@ -160,7 +160,7 @@ export class BookingsService {
         // Sub-participants = all except trainer (who hosts from main)
         const subParticipants = [clientId];
         for (let i = 1; i <= count; i++) {
-          const brJaasName = `ptak-session-${bookingShort}-${slugify(`room-${i}`)}-${randomSuffix()}`;
+          const brJaasName = `uteo-session-${bookingShort}-${slugify(`room-${i}`)}-${randomSuffix()}`;
           // Auto: distribute round-robin; manual: put everyone in every room (trainer will reassign)
           const assigned = assignMode === 'auto'
             ? subParticipants.filter((_, idx) => idx % count === i - 1)

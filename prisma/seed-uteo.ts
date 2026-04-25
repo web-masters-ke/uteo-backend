@@ -638,6 +638,44 @@ async function main() {
     });
   }
 
+  // ── Applications ──────────────────────────────────────────────────────────
+  const allJobs = await prisma.job.findMany({ select: { id: true, title: true } });
+  const allSeekers = await prisma.user.findMany({
+    where: { email: { in: seekerDefs.map(s => s.email) } },
+    select: { id: true },
+  });
+
+  // Weighted status distribution: INTERVIEW and SHORTLISTED prominent for demo
+  const appStatuses: Array<'SUBMITTED' | 'REVIEWED' | 'SHORTLISTED' | 'INTERVIEW' | 'HIRED' | 'REJECTED'> = [
+    'SUBMITTED', 'SUBMITTED', 'SUBMITTED', 'SUBMITTED',
+    'REVIEWED', 'REVIEWED', 'REVIEWED',
+    'SHORTLISTED', 'SHORTLISTED', 'SHORTLISTED',
+    'INTERVIEW', 'INTERVIEW', 'INTERVIEW', 'INTERVIEW',
+    'HIRED', 'HIRED',
+    'REJECTED', 'REJECTED',
+  ];
+
+  let appCount = 0;
+  for (const seeker of allSeekers) {
+    const numApps = rndInt(8, 14);
+    const shuffled = [...allJobs].sort(() => Math.random() - 0.5).slice(0, numApps);
+    for (const job of shuffled) {
+      const status = rnd(appStatuses);
+      try {
+        await prisma.application.create({
+          data: {
+            userId: seeker.id,
+            jobId: job.id,
+            status,
+            coverLetter: `I am very excited to apply for the ${job.title} role. My background aligns closely with what you are looking for and I would welcome the chance to discuss further.`,
+            appliedAt: daysAgo(rndInt(1, 25)),
+          },
+        });
+        appCount++;
+      } catch { /* skip duplicate */ }
+    }
+  }
+
   // ── Summary ────────────────────────────────────────────────────────────────
   console.log(`\n✅ Uteo seed complete`);
   console.log(`   Companies:   ${await prisma.company.count()}`);
@@ -645,6 +683,7 @@ async function main() {
   console.log(`   Skills:      ${await prisma.skill.count()}`);
   console.log(`   Recruiters:  ${recruiters.length}`);
   console.log(`   Job seekers: ${seekerDefs.length}`);
+  console.log(`   Applications:${appCount}`);
   console.log(`\nDemo credentials:`);
   console.log(`   Recruiter:   michael.kariuki@uteo-demo.ke / Recruiter2026!`);
   console.log(`   Job seeker:  amara.osei@uteo-demo.ke / Seeker2026!`);

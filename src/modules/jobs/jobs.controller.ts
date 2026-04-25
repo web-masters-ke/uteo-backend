@@ -64,6 +64,11 @@ export class JobsController {
     return this.svc.unsaveJob(id, user.id);
   }
 
+  @Get(':id/candidates')
+  getCandidates(@Param('id') id: string, @CurrentUser() user: JwtUser) {
+    return this.svc.getCandidates(id, user.id);
+  }
+
   @Post(':id/interact')
   interact(
     @Param('id') id: string,

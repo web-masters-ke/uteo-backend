@@ -30,7 +30,7 @@ export class JwtAuthGuard implements CanActivate {
     try {
       const payload = jwt.verify(
         token,
-        process.env.JWT_SECRET || 'ptak-dev-secret-change-me',
+        process.env.JWT_SECRET || 'uteo-dev-secret-2026',
       ) as { sub: string; email: string; role: string };
 
       const user = await this.prisma.user.findUnique({

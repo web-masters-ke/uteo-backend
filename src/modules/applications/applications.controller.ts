@@ -13,6 +13,7 @@ import {
   CreateApplicationDto,
   UpdateApplicationStatusDto,
   ListApplicationsDto,
+  CreateManualApplicationDto,
 } from './dto/applications.dto';
 import { CurrentUser, JwtUser } from '../../common/decorators/current-user.decorator';
 
@@ -23,6 +24,11 @@ export class ApplicationsController {
   @Post()
   create(@CurrentUser() user: JwtUser, @Body() dto: CreateApplicationDto) {
     return this.svc.create(user.id, dto);
+  }
+
+  @Post('manual')
+  createManual(@CurrentUser() user: JwtUser, @Body() body: CreateManualApplicationDto) {
+    return this.svc.createManual(user.id, body);
   }
 
   @Get()

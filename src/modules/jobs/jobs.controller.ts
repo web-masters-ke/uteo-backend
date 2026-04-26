@@ -19,7 +19,7 @@ export class JobsController {
 
   @Post()
   create(@CurrentUser() user: JwtUser, @Body() dto: CreateJobDto) {
-    return this.svc.create(user.id, dto);
+    return this.svc.create(user.id, dto, user.role);
   }
 
   @Public()
@@ -66,7 +66,7 @@ export class JobsController {
 
   @Get(':id/candidates')
   getCandidates(@Param('id') id: string, @CurrentUser() user: JwtUser) {
-    return this.svc.getCandidates(id, user.id);
+    return this.svc.getCandidates(id, user.id, user.role);
   }
 
   @Post(':id/interact')

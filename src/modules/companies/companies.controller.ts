@@ -24,7 +24,7 @@ export class CompaniesController {
 
   @Post()
   create(@CurrentUser() user: JwtUser, @Body() dto: CreateCompanyDto) {
-    return this.svc.create(user.id, dto);
+    return this.svc.create(user.id, dto, user.role);
   }
 
   @Public()

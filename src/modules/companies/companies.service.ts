@@ -18,7 +18,9 @@ import { Prisma } from '@prisma/client';
 export class CompaniesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(userId: string, dto: CreateCompanyDto) {
+  async create(userId: string, dto: CreateCompanyDto, userRole?: string) {
+    const isAdmin = userRole === 'ADMIN' || userRole === 'SUPER_ADMIN' || userRole === 'FINANCE_ADMIN';
+    const recruiterUserId = (isAdmin && dto.ownerId) ? dto.ownerId : userId;
     const company = await this.prisma.company.create({
       data: {
         name: dto.name,
@@ -29,7 +31,7 @@ export class CompaniesService {
         size: dto.size,
         location: dto.location,
         recruiters: {
-          create: { userId, title: undefined },
+          create: { userId: recruiterUserId, title: undefined },
         },
       },
       include: { recruiters: { include: { user: { select: { id: true, email: true, firstName: true, lastName: true } } } } },

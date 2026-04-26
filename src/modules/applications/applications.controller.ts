@@ -47,11 +47,11 @@ export class ApplicationsController {
     @CurrentUser() user: JwtUser,
     @Body() dto: UpdateApplicationStatusDto,
   ) {
-    return this.svc.updateStatus(id, user.id, dto);
+    return this.svc.updateStatus(id, user.id, dto, user.role);
   }
 
   @Delete(':id')
   withdraw(@Param('id') id: string, @CurrentUser() user: JwtUser) {
-    return this.svc.withdraw(id, user.id);
+    return this.svc.withdraw(id, user.id, user.role);
   }
 }

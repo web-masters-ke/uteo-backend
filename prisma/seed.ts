@@ -180,7 +180,7 @@ async function main() {
   // ── Super Admin ───────────────────────────────────────────────────────────
   const admin = await prisma.user.create({
     data: {
-      email: 'admin@ptak.co.ke', phone: '+254700000001', passwordHash: pw,
+      email: 'admin@uteo.com', phone: '+254700000001', passwordHash: pw,
       firstName: 'System', lastName: 'Admin', name: 'System Admin',
       role: 'SUPER_ADMIN', status: 'ACTIVE', emailVerified: true, phoneVerified: true,
       lastLoginAt: hoursAgo(2),
@@ -193,7 +193,7 @@ async function main() {
   // ── Finance Admin ─────────────────────────────────────────────────────────
   const financeAdmin = await prisma.user.create({
     data: {
-      email: 'finance@ptak.co.ke', phone: '+254700000004', passwordHash: pw,
+      email: 'finance@uteo.com', phone: '+254700000004', passwordHash: pw,
       firstName: 'Finance', lastName: 'Admin', name: 'Finance Admin',
       role: 'FINANCE_ADMIN', status: 'ACTIVE', emailVerified: true, phoneVerified: true,
       lastLoginAt: hoursAgo(4),
@@ -206,7 +206,7 @@ async function main() {
   // ── Ops Admin ─────────────────────────────────────────────────────────────
   const opsAdmin = await prisma.user.create({
     data: {
-      email: 'ops@ptak.co.ke', phone: '+254700000005', passwordHash: pw,
+      email: 'ops@uteo.com', phone: '+254700000005', passwordHash: pw,
       firstName: 'Ops', lastName: 'Admin', name: 'Ops Admin',
       role: 'ADMIN', status: 'ACTIVE', emailVerified: true, phoneVerified: true,
       lastLoginAt: hoursAgo(5),
@@ -219,7 +219,7 @@ async function main() {
   // ── Support Admin ─────────────────────────────────────────────────────────
   const supportAdmin = await prisma.user.create({
     data: {
-      email: 'support@ptak.co.ke', phone: '+254700000006', passwordHash: pw,
+      email: 'support@uteo.com', phone: '+254700000006', passwordHash: pw,
       firstName: 'Support', lastName: 'Admin', name: 'Support Admin',
       role: 'SUPPORT', status: 'ACTIVE', emailVerified: true, phoneVerified: true,
       lastLoginAt: hoursAgo(6),

@@ -3,7 +3,6 @@ import {
   IsOptional,
   IsEnum,
   IsBoolean,
-  IsUrl,
   MaxLength,
   IsNotEmpty,
 } from 'class-validator';
@@ -18,6 +17,10 @@ export class CreateCompanyDto {
 
   @IsOptional()
   @IsString()
+  ownerId?: string;
+
+  @IsOptional()
+  @IsString()
   @MaxLength(2000)
   description?: string;
 
@@ -27,7 +30,8 @@ export class CreateCompanyDto {
   industry?: string;
 
   @IsOptional()
-  @IsUrl()
+  @IsString()
+  @MaxLength(500)
   website?: string;
 
   @IsOptional()
@@ -62,7 +66,8 @@ export class UpdateCompanyDto {
   industry?: string;
 
   @IsOptional()
-  @IsUrl()
+  @IsString()
+  @MaxLength(500)
   website?: string;
 
   @IsOptional()

@@ -21,20 +21,24 @@ const VALID_ACTIONS = ['view', 'click', 'save', 'apply', 'skip'];
 export class JobsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(userId: string, dto: CreateJobDto) {
-    // Verify the user is a recruiter for the company
-    const recruiter = await this.prisma.recruiter.findUnique({
-      where: { userId_companyId: { userId, companyId: dto.companyId } },
-    });
-    if (!recruiter) {
-      throw new ForbiddenException('You are not a recruiter for this company');
+  async create(userId: string, dto: CreateJobDto, userRole?: string) {
+    const isAdmin = userRole === 'ADMIN' || userRole === 'SUPER_ADMIN' || userRole === 'FINANCE_ADMIN';
+    const effectivePosterId = dto.postedById ?? userId;
+
+    if (!isAdmin) {
+      const recruiter = await this.prisma.recruiter.findUnique({
+        where: { userId_companyId: { userId, companyId: dto.companyId } },
+      });
+      if (!recruiter) {
+        throw new ForbiddenException('You are not a recruiter for this company');
+      }
     }
 
-    const { skillIds, hiringStages, ...jobData } = dto;
+    const { skillIds, hiringStages, postedById: _ignored, ...jobData } = dto;
     const job = await this.prisma.job.create({
       data: {
         ...jobData,
-        postedById: userId,
+        postedById: effectivePosterId,
         expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : undefined,
         hiringStages: hiringStages ? JSON.parse(JSON.stringify(hiringStages)) : [],
         jobSkills: skillIds && skillIds.length > 0
@@ -212,17 +216,20 @@ export class JobsService {
     return saved;
   }
 
-  async getCandidates(jobId: string, recruiterId: string) {
+  async getCandidates(jobId: string, recruiterId: string, userRole?: string) {
     const job = await this.prisma.job.findUnique({
       where: { id: jobId },
       include: { jobSkills: { include: { skill: { select: { id: true, name: true } } } } },
     });
     if (!job) throw new NotFoundException('Job not found');
 
-    const recruiter = await this.prisma.recruiter.findUnique({
-      where: { userId_companyId: { userId: recruiterId, companyId: job.companyId } },
-    });
-    if (!recruiter) throw new ForbiddenException('Not authorised to view candidates for this job');
+    const isAdmin = userRole === 'ADMIN' || userRole === 'SUPER_ADMIN' || userRole === 'FINANCE_ADMIN' || userRole === 'SUPPORT';
+    if (!isAdmin) {
+      const recruiter = await this.prisma.recruiter.findUnique({
+        where: { userId_companyId: { userId: recruiterId, companyId: job.companyId } },
+      });
+      if (!recruiter) throw new ForbiddenException('Not authorised to view candidates for this job');
+    }
 
     const jobSkillIds = job.jobSkills.map((js) => js.skill.id);
 

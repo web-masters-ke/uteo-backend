@@ -8,6 +8,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 
 const DEFAULT_WEIGHTS = { skill_match: 0.30, rating: 0.25, experience: 0.15, completion_rate: 0.15, availability: 0.10, price: 0.05 };
 const DEFAULT_AI_CFG = { rankingEngine: false, fraudDetection: false, reviewModeration: false, chatModeration: false, sessionTranscription: false };
+const DEFAULT_PLATFORM: Record<string, any> = { appName: 'Uteo', supportEmail: 'support@uteo.com', defaultCommissionRate: 10, currency: 'KES', maintenanceMode: false };
 
 @Controller('admin') @UseGuards(RolesGuard) @Roles('ADMIN','SUPER_ADMIN')
 export class AdminController {
@@ -52,6 +53,29 @@ export class AdminController {
       update: { value: merged },
     });
     return merged;
+  }
+
+  // Platform Settings — structured GET/PATCH for admin settings page
+  @Get('settings')
+  async getPlatformSettings() {
+    const rows = await this.prisma.systemSetting.findMany({ where: { category: 'platform' } });
+    const map: Record<string, any> = {};
+    rows.forEach(r => { map[r.key.replace(/^platform\./, '')] = r.value; });
+    return { ...DEFAULT_PLATFORM, ...map };
+  }
+  @Patch('settings')
+  async updatePlatformSettings(@Body() body: Record<string, any>) {
+    const allowed = ['appName', 'supportEmail', 'defaultCommissionRate', 'currency', 'maintenanceMode'];
+    await Promise.all(
+      Object.entries(body)
+        .filter(([k]) => allowed.includes(k))
+        .map(([k, v]) => this.prisma.systemSetting.upsert({
+          where: { key: `platform.${k}` },
+          create: { key: `platform.${k}`, value: v, category: 'platform' },
+          update: { value: v },
+        }))
+    );
+    return this.getPlatformSettings();
   }
 
   // System Settings — generic CRUD

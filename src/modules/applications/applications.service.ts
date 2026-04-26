@@ -174,10 +174,27 @@ export class ApplicationsService {
 
   async findAll(userId: string, userRole: string, dto: ListApplicationsDto) {
     const { page, limit, skip } = pageParams(dto);
-    const isAdmin = userRole === 'ADMIN' || userRole === 'SUPER_ADMIN';
+    const isAdmin = userRole === 'ADMIN' || userRole === 'SUPER_ADMIN' || userRole === 'FINANCE_ADMIN' || userRole === 'SUPPORT';
     const where: Prisma.ApplicationWhereInput = {};
 
     if (dto.status) where.status = dto.status;
+
+    if (dto.search) {
+      const s = dto.search.trim();
+      where.OR = [
+        { user: { firstName: { contains: s, mode: 'insensitive' } } },
+        { user: { lastName: { contains: s, mode: 'insensitive' } } },
+        { user: { email: { contains: s, mode: 'insensitive' } } },
+        { job: { title: { contains: s, mode: 'insensitive' } } },
+      ];
+    }
+
+    if (dto.dateFrom || dto.dateTo) {
+      where.appliedAt = {
+        ...(dto.dateFrom ? { gte: new Date(dto.dateFrom) } : {}),
+        ...(dto.dateTo ? { lte: new Date(dto.dateTo + 'T23:59:59.999Z') } : {}),
+      };
+    }
 
     const recruiterProfiles = await this.prisma.recruiter.findMany({ where: { userId }, select: { companyId: true } });
     const isRecruiter = recruiterProfiles.length > 0 || userRole === 'TRAINER';
@@ -257,7 +274,7 @@ export class ApplicationsService {
     return application;
   }
 
-  async updateStatus(id: string, userId: string, dto: UpdateApplicationStatusDto) {
+  async updateStatus(id: string, userId: string, dto: UpdateApplicationStatusDto, userRole?: string) {
     const application = await this.prisma.application.findUnique({
       where: { id },
       include: {
@@ -266,10 +283,13 @@ export class ApplicationsService {
     });
     if (!application) throw new NotFoundException('Application not found');
 
-    const recruiter = await this.prisma.recruiter.findUnique({
-      where: { userId_companyId: { userId, companyId: application.job.companyId } },
-    });
-    if (!recruiter) throw new ForbiddenException('Not authorised to update this application');
+    const isAdmin = userRole === 'ADMIN' || userRole === 'SUPER_ADMIN' || userRole === 'FINANCE_ADMIN' || userRole === 'SUPPORT';
+    if (!isAdmin) {
+      const recruiter = await this.prisma.recruiter.findUnique({
+        where: { userId_companyId: { userId, companyId: application.job.companyId } },
+      });
+      if (!recruiter) throw new ForbiddenException('Not authorised to update this application');
+    }
 
     const updated = await this.prisma.application.update({
       where: { id },
@@ -296,13 +316,14 @@ export class ApplicationsService {
     return updated;
   }
 
-  async withdraw(id: string, userId: string) {
+  async withdraw(id: string, userId: string, userRole?: string) {
     const application = await this.prisma.application.findUnique({
       where: { id },
       include: { job: { select: { id: true, title: true, postedById: true } } },
     });
     if (!application) throw new NotFoundException('Application not found');
-    if (application.userId !== userId) {
+    const isAdmin = userRole === 'ADMIN' || userRole === 'SUPER_ADMIN' || userRole === 'FINANCE_ADMIN' || userRole === 'SUPPORT';
+    if (!isAdmin && application.userId !== userId) {
       throw new ForbiddenException('You can only withdraw your own applications');
     }
     await this.prisma.application.delete({ where: { id } });

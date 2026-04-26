@@ -35,6 +35,10 @@ export class CreateJobDto {
   @IsNotEmpty()
   companyId: string;
 
+  @IsOptional()
+  @IsString()
+  postedById?: string;
+
   @IsString()
   @IsNotEmpty()
   @MaxLength(200)

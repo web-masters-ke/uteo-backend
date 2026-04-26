@@ -8,8 +8,9 @@ export class AiService {
 
   constructor() {
     const key = process.env.ANTHROPIC_API_KEY;
-    this.client = key ? new Anthropic({ apiKey: key }) : null;
-    if (!this.client) this.logger.warn('ANTHROPIC_API_KEY not set — AI features will return stubs');
+    const isRealKey = !!key && key.length > 20 && !key.includes('...');
+    this.client = isRealKey ? new Anthropic({ apiKey: key! }) : null;
+    if (!this.client) this.logger.warn('ANTHROPIC_API_KEY not configured — AI features will return stubs. Set a real key from console.anthropic.com');
   }
 
   private async ask(prompt: string, system: string, maxTokens = 600): Promise<string> {
@@ -88,19 +89,22 @@ Write a 1-sentence recruiter insight (max 20 words) about this candidate's fit. 
   }
 
   async careerAdvice(messages: { role: 'user' | 'assistant'; content: string }[]): Promise<string> {
-    if (!this.client) return "I'm your AI career advisor. Ask me anything about job hunting, interviews, or career growth!";
+    const lastUserMsg = [...messages].reverse().find((m) => m.role === 'user')?.content ?? '';
+    const stub = `Great question about "${lastUserMsg.slice(0, 60)}${lastUserMsg.length > 60 ? '…' : ''}". To get live AI career advice powered by Claude, the platform admin needs to configure an Anthropic API key at console.anthropic.com.`;
+
+    if (!this.client) return stub;
     try {
       const msg = await this.client.messages.create({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 400,
-        system: `You are Uteo's AI career advisor. Help job seekers with CV tips, interview prep, salary negotiation, and career decisions. Be warm, practical, and concise. Keep replies under 120 words.`,
+        system: `You are Uteo's AI career advisor. Help job seekers with CV tips, interview prep, salary negotiation, and career decisions. Be warm, practical, and concise. Keep replies under 120 words. Never use markdown — no asterisks, no hyphens for bullets, no headers. Write in plain conversational prose only.`,
         messages,
       });
       const block = msg.content[0];
-      return block.type === 'text' ? block.text.trim() : '';
+      return block.type === 'text' ? block.text.trim() : stub;
     } catch (err) {
       this.logger.error('Claude career advice error', err);
-      return 'Sorry, I hit a snag. Please try again in a moment.';
+      return stub;
     }
   }
 

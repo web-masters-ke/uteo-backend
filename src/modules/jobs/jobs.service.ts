@@ -168,7 +168,11 @@ export class JobsService {
     if (!isAdmin && job.postedById !== userId) {
       throw new ForbiddenException('Not authorised to delete this job');
     }
-    await this.prisma.job.delete({ where: { id } });
+    // Application has no onDelete:Cascade — must delete children before job
+    await this.prisma.$transaction(async (tx) => {
+      await tx.application.deleteMany({ where: { jobId: id } });
+      await tx.job.delete({ where: { id } });
+    });
     return { message: 'Job deleted' };
   }
 

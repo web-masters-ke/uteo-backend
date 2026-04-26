@@ -45,7 +45,7 @@ export class CompaniesController {
     @CurrentUser() user: JwtUser,
     @Body() dto: UpdateCompanyDto,
   ) {
-    return this.svc.update(id, user.id, dto);
+    return this.svc.update(id, user.id, dto, user.role);
   }
 
   @Post(':id/recruiters')
@@ -54,7 +54,7 @@ export class CompaniesController {
     @CurrentUser() user: JwtUser,
     @Body() dto: AddRecruiterDto,
   ) {
-    return this.svc.addRecruiter(id, user.id, dto);
+    return this.svc.addRecruiter(id, user.id, dto, user.role);
   }
 
   @Delete(':id/recruiters/:userId')
@@ -63,6 +63,6 @@ export class CompaniesController {
     @Param('userId') targetUserId: string,
     @CurrentUser() user: JwtUser,
   ) {
-    return this.svc.removeRecruiter(id, user.id, targetUserId);
+    return this.svc.removeRecruiter(id, user.id, targetUserId, user.role);
   }
 }

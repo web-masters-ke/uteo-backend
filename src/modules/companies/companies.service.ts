@@ -80,8 +80,8 @@ export class CompaniesService {
     return company;
   }
 
-  async update(id: string, userId: string, dto: UpdateCompanyDto) {
-    await this.assertRecruiter(id, userId);
+  async update(id: string, userId: string, dto: UpdateCompanyDto, userRole?: string) {
+    await this.assertRecruiter(id, userId, userRole);
     return this.prisma.company.update({
       where: { id },
       data: {
@@ -97,8 +97,8 @@ export class CompaniesService {
     });
   }
 
-  async addRecruiter(companyId: string, requesterId: string, dto: AddRecruiterDto) {
-    await this.assertRecruiter(companyId, requesterId);
+  async addRecruiter(companyId: string, requesterId: string, dto: AddRecruiterDto, requesterRole?: string) {
+    await this.assertRecruiter(companyId, requesterId, requesterRole);
     const user = await this.prisma.user.findUnique({ where: { id: dto.userId } });
     if (!user) throw new NotFoundException('User not found');
     const existing = await this.prisma.recruiter.findUnique({
@@ -111,8 +111,8 @@ export class CompaniesService {
     });
   }
 
-  async removeRecruiter(companyId: string, requesterId: string, targetUserId: string) {
-    await this.assertRecruiter(companyId, requesterId);
+  async removeRecruiter(companyId: string, requesterId: string, targetUserId: string, requesterRole?: string) {
+    await this.assertRecruiter(companyId, requesterId, requesterRole);
     const recruiter = await this.prisma.recruiter.findUnique({
       where: { userId_companyId: { userId: targetUserId, companyId } },
     });
@@ -125,9 +125,11 @@ export class CompaniesService {
 
   // ── helpers ──────────────────────────────────────────────────────────────
 
-  private async assertRecruiter(companyId: string, userId: string) {
+  private async assertRecruiter(companyId: string, userId: string, userRole?: string) {
     const company = await this.prisma.company.findUnique({ where: { id: companyId } });
     if (!company) throw new NotFoundException('Company not found');
+    const isAdmin = userRole === 'ADMIN' || userRole === 'SUPER_ADMIN' || userRole === 'FINANCE_ADMIN';
+    if (isAdmin) return company;
     const rec = await this.prisma.recruiter.findUnique({
       where: { userId_companyId: { userId, companyId } },
     });

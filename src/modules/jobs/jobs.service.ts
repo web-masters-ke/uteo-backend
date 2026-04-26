@@ -121,10 +121,11 @@ export class JobsService {
     return job;
   }
 
-  async update(id: string, userId: string, dto: UpdateJobDto) {
+  async update(id: string, userId: string, dto: UpdateJobDto, userRole?: string) {
     const job = await this.prisma.job.findUnique({ where: { id } });
     if (!job) throw new NotFoundException('Job not found');
-    if (job.postedById !== userId) {
+    const isAdmin = userRole === 'ADMIN' || userRole === 'SUPER_ADMIN' || userRole === 'FINANCE_ADMIN';
+    if (!isAdmin && job.postedById !== userId) {
       // Check if admin recruiter for company
       const recruiter = await this.prisma.recruiter.findUnique({
         where: { userId_companyId: { userId, companyId: job.companyId } },

@@ -46,7 +46,7 @@ export class JobsController {
     @CurrentUser() user: JwtUser,
     @Body() dto: UpdateJobDto,
   ) {
-    return this.svc.update(id, user.id, dto);
+    return this.svc.update(id, user.id, dto, user.role);
   }
 
   @Delete(':id')

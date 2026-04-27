@@ -1,6 +1,6 @@
-import { Controller, Get, Post, Patch, Param, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Body, Query } from '@nestjs/common';
 import { ChatService } from './chat.service';
-import { CreateConversationDto, SendMessageDto, UpdateMessageFileDto, ListConversationsDto, ListMessagesDto } from './dto/chat.dto';
+import { CreateConversationDto, SendMessageDto, UpdateMessageFileDto, ListConversationsDto, ListMessagesDto, DeleteMessageDto } from './dto/chat.dto';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 @Controller('conversations')
 export class ChatController {
@@ -12,4 +12,5 @@ export class ChatController {
   @Get(':id/messages') messages(@Param('id') id: string, @CurrentUser('id') uid: string, @Query() dto: ListMessagesDto) { return this.svc.getMessages(id, uid, dto); }
   @Patch('messages/:id/file') updateFile(@Param('id') id: string, @CurrentUser('id') uid: string, @Body() dto: UpdateMessageFileDto) { return this.svc.updateMessageFile(id, uid, dto); }
   @Patch('messages/:id/read') markRead(@Param('id') id: string, @CurrentUser('id') uid: string) { return this.svc.markAsRead(id, uid); }
+  @Delete('messages/:id') deleteMessage(@Param('id') id: string, @CurrentUser('id') uid: string, @Body() dto: DeleteMessageDto) { return this.svc.deleteMessage(id, uid, dto.scope); }
 }

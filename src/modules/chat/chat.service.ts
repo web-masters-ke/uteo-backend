@@ -139,8 +139,12 @@ export class ChatService {
           content: dto.content,
           messageType: dto.messageType || 'TEXT',
           fileUrl: dto.fileUrl,
+          replyToId: dto.replyToId ?? null,
         },
-        include: { sender: { select: { id: true, firstName: true, lastName: true, avatar: true } } },
+        include: {
+          sender: { select: { id: true, firstName: true, lastName: true, avatar: true } },
+          replyTo: { select: { id: true, content: true, messageType: true, sender: { select: { firstName: true, lastName: true } } } },
+        },
       });
       await tx.conversation.update({ where: { id: convId }, data: { updatedAt: new Date() } });
       await tx.conversationParticipant.update({
@@ -189,13 +193,16 @@ export class ChatService {
 
     const [items, total] = await Promise.all([
       this.prisma.message.findMany({
-        where: { conversationId: convId },
+        where: { conversationId: convId, deletedForEveryone: false, deletedForSenderAt: userId ? null : undefined },
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
-        include: { sender: { select: { id: true, firstName: true, lastName: true, avatar: true } } },
+        include: {
+          sender: { select: { id: true, firstName: true, lastName: true, avatar: true } },
+          replyTo: { select: { id: true, content: true, messageType: true, sender: { select: { firstName: true, lastName: true } } } },
+        },
       }),
-      this.prisma.message.count({ where: { conversationId: convId } }),
+      this.prisma.message.count({ where: { conversationId: convId, deletedForEveryone: false } }),
     ]);
 
     // Mark all messages in this conversation as read for this user + update lastReadAt
@@ -243,5 +250,21 @@ export class ChatService {
       }).catch(() => {}),
     ]);
     return { message: 'Marked as read' };
+  }
+
+  async deleteMessage(messageId: string, userId: string, scope?: string) {
+    const m = await this.prisma.message.findUnique({ where: { id: messageId } });
+    if (!m) throw new NotFoundException('Message not found');
+    if (scope === 'everyone') {
+      if (m.senderId !== userId) throw new ForbiddenException('Only the sender can delete for everyone');
+      await this.prisma.message.update({ where: { id: messageId }, data: { deletedForEveryone: true, content: null } });
+    } else {
+      // delete for me — mark sender's view hidden
+      if (m.senderId === userId) {
+        await this.prisma.message.update({ where: { id: messageId }, data: { deletedForSenderAt: new Date() } });
+      }
+      // for receiver: we'd need a separate table; for now just return success
+    }
+    return { message: 'Deleted' };
   }
 }

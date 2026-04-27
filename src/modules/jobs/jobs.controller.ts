@@ -34,6 +34,18 @@ export class JobsController {
     return this.svc.getSavedJobs(user.id);
   }
 
+  // Recruiter's own posted jobs
+  @Get('mine')
+  getMyJobs(@CurrentUser() user: JwtUser) {
+    return this.svc.getMyJobs(user.id);
+  }
+
+  // All candidates across all of the recruiter's jobs
+  @Get('mine/candidates')
+  getAllMyCandidates(@CurrentUser() user: JwtUser) {
+    return this.svc.getAllMyCandidates(user.id);
+  }
+
   @Public()
   @Get(':id')
   findOne(@Param('id') id: string) {

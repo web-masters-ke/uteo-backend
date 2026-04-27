@@ -729,17 +729,22 @@ model ConversationParticipant {
 }
 
 model Message {
-  id             String       @id @default(uuid())
-  conversationId String
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  senderId       String
-  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
-  messageType    String       @default("TEXT")
-  content        String?
-  fileUrl        String?
-  metadata       Json?
-  isRead         Boolean      @default(false)
-  createdAt      DateTime     @default(now())
+  id                  String    @id @default(uuid())
+  conversationId      String
+  conversation        Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId            String
+  sender              User      @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  messageType         String    @default("TEXT")
+  content             String?
+  fileUrl             String?
+  metadata            Json?
+  isRead              Boolean   @default(false)
+  createdAt           DateTime  @default(now())
+  deletedForEveryone  Boolean   @default(false)
+  deletedForSenderAt  DateTime?
+  replyToId           String?
+  replyTo             Message?  @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies             Message[] @relation("MessageReplies")
 
   @@index([conversationId, createdAt])
   @@index([senderId])

@@ -216,6 +216,88 @@ export class JobsService {
     return saved;
   }
 
+  async getMyJobs(userId: string) {
+    const jobs = await this.prisma.job.findMany({
+      where: { postedById: userId },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        jobType: true,
+        location: true,
+        createdAt: true,
+        _count: { select: { applications: true } },
+      },
+    });
+    return { items: jobs, total: jobs.length };
+  }
+
+  async getAllMyCandidates(recruiterId: string) {
+    // Get all jobs posted by this recruiter
+    const myJobs = await this.prisma.job.findMany({
+      where: { postedById: recruiterId },
+      select: { id: true, title: true, jobSkills: { include: { skill: { select: { id: true, name: true } } } } },
+    });
+
+    if (myJobs.length === 0) return { items: [], total: 0 };
+
+    const jobIds = myJobs.map((j) => j.id);
+
+    // Fetch all applications across all recruiter's jobs (deduplicate by userId)
+    const applications = await this.prisma.application.findMany({
+      where: { jobId: { in: jobIds } },
+      orderBy: { appliedAt: 'desc' },
+      include: {
+        job: { select: { id: true, title: true } },
+        user: {
+          select: {
+            id: true, firstName: true, lastName: true, avatar: true, email: true,
+            userSkills: { include: { skill: { select: { id: true, name: true } } } },
+            jobSeekerProfile: { select: { headline: true, location: true, resumeUrl: true } },
+          },
+        },
+      },
+    });
+
+    // Deduplicate — keep the most recent application per user, merge job info
+    const seen = new Map<string, typeof applications[0]>();
+    for (const a of applications) {
+      if (!seen.has(a.user.id)) seen.set(a.user.id, a);
+    }
+
+    const items = [...seen.values()].map((a) => {
+      const profile = a.user.jobSeekerProfile;
+      const candidateSkillIds = a.user.userSkills.map((us) => us.skillId);
+      // Aggregate skill match across all recruiter jobs
+      const allJobSkillIds = [...new Set(myJobs.flatMap((j) => j.jobSkills.map((js) => js.skill.id)))];
+      const matchedSkillIds = candidateSkillIds.filter((id) => allJobSkillIds.includes(id));
+      const matchScore = allJobSkillIds.length > 0
+        ? Math.round((matchedSkillIds.length / allJobSkillIds.length) * 100)
+        : 0;
+      const matchedSkills = a.user.userSkills
+        .filter((us) => matchedSkillIds.includes(us.skillId))
+        .map((us) => us.skill.name);
+      return {
+        id: a.user.id,
+        firstName: a.user.firstName,
+        lastName: a.user.lastName,
+        avatar: a.user.avatar,
+        email: a.user.email,
+        headline: profile?.headline ?? null,
+        location: profile?.location ?? null,
+        resumeUrl: profile?.resumeUrl ?? null,
+        skills: a.user.userSkills.map((us) => ({ id: us.skillId, name: us.skill.name })),
+        matchScore,
+        matchedSkills,
+        applied: true,
+        appliedToJob: a.job.title,
+      };
+    });
+
+    return { items, total: items.length };
+  }
+
   async getCandidates(jobId: string, recruiterId: string, userRole?: string) {
     const job = await this.prisma.job.findUnique({
       where: { id: jobId },

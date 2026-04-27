@@ -7,7 +7,7 @@ import { ListAuditLogsDto, VerifyTrainerDto, AnalyticsQueryDto } from './dto/adm
 export class AdminService {
   constructor(private readonly prisma: PrismaService) {}
   async getDashboard() {
-    const [totalUsers,totalTrainers,verified,totalBookings,completed,activeEscrows,rev,recentSignups,activeSubs] = await Promise.all([
+    const [totalUsers,totalTrainers,verified,totalBookings,completed,activeEscrows,rev,recentSignups,activeSubs,totalJobs,activeJobs,totalApplications,totalCompanies,newApplications] = await Promise.all([
       this.prisma.user.count({ where: { deletedAt: null } }),
       this.prisma.user.count({ where: { role: 'TRAINER', deletedAt: null } }),
       this.prisma.trainerProfile.count({ where: { verificationStatus: 'VERIFIED' } }),
@@ -17,8 +17,13 @@ export class AdminService {
       this.prisma.booking.aggregate({ _sum: { amount: true }, where: { status: 'COMPLETED' } }),
       this.prisma.user.count({ where: { createdAt: { gte: new Date(Date.now()-7*86400000) }, deletedAt: null } }),
       this.prisma.subscription.count({ where: { status: 'ACTIVE' } }),
+      this.prisma.job.count(),
+      this.prisma.job.count({ where: { status: 'ACTIVE' } }),
+      this.prisma.application.count(),
+      this.prisma.company.count(),
+      this.prisma.application.count({ where: { appliedAt: { gte: new Date(Date.now()-7*86400000) } } }),
     ]);
-    return { totalUsers, totalTrainers, verifiedTrainers: verified, totalBookings, completedBookings: completed, activeEscrows, totalRevenue: rev._sum.amount||0, recentSignups, activeSubscriptions: activeSubs };
+    return { totalUsers, totalTrainers, verifiedTrainers: verified, totalBookings, completedBookings: completed, activeEscrows, totalRevenue: rev._sum.amount||0, recentSignups, activeSubscriptions: activeSubs, totalJobs, activeJobs, totalApplications, totalCompanies, newApplications };
   }
   async getAnalytics(dto: AnalyticsQueryDto) {
     const from = dto.dateFrom ? new Date(dto.dateFrom) : new Date(Date.now()-30*86400000);

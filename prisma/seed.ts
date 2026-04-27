@@ -10,14 +10,25 @@ function hoursAgo(n: number) { return new Date(Date.now() - n * 3600_000); }
 function daysFrom(n: number) { return new Date(Date.now() + n * 86400_000); }
 
 async function main() {
-  console.log('Seeding PTAK...');
+  console.log('Seeding Uteo...');
   const pw = await bcrypt.hash('Admin2026!', 12);
-  const trainerPw = await bcrypt.hash('Trainer2026!', 12);
-  const clientPw = await bcrypt.hash('Client2026!', 12);
+  const recruiterPw = await bcrypt.hash('Recruiter2026!', 12);
+  const seekerPw = await bcrypt.hash('Seeker2026!', 12);
 
   // ── Clear ALL tables (try/catch each — some tables may not exist on older migrations) ──
   const del = async (fn: () => Promise<any>) => { try { await fn(); } catch { /* table may not exist yet */ } };
   await del(() => prisma.scheduledReminder.deleteMany());
+  await del(() => prisma.jobInteraction.deleteMany());
+  await del(() => prisma.savedJob.deleteMany());
+  await del(() => prisma.application.deleteMany());
+  await del(() => prisma.jobSkill.deleteMany());
+  await del(() => prisma.job.deleteMany());
+  await del(() => prisma.recruiter.deleteMany());
+  await del(() => prisma.company.deleteMany());
+  await del(() => prisma.userSkill.deleteMany());
+  await del(() => prisma.workExperience.deleteMany());
+  await del(() => prisma.education.deleteMany());
+  await del(() => prisma.jobSeekerProfile.deleteMany());
   await del(() => prisma.institutionalAffiliation.deleteMany());
   await del(() => prisma.questionAnswer.deleteMany());
   await del(() => prisma.lessonQuestion.deleteMany());
@@ -236,8 +247,8 @@ async function main() {
   // ── Test Trainer ──────────────────────────────────────────────────────────
   const trainerUser = await prisma.user.create({
     data: {
-      email: 'trainer@ptak.co.ke', phone: '+254700000002', passwordHash: trainerPw,
-      firstName: 'Jane', lastName: 'Muthoni', name: 'Jane Muthoni',
+      email: 'benjamin.kakai@uteo-demo.ke', phone: '+254700000002', passwordHash: recruiterPw,
+      firstName: 'Benjamin', lastName: 'Kakai', name: 'Benjamin Kakai',
       avatar: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=200&h=200&fit=crop&crop=face',
       role: 'TRAINER', status: 'ACTIVE', emailVerified: true, phoneVerified: true,
       lastLoginAt: hoursAgo(1),
@@ -249,8 +260,8 @@ async function main() {
   const trainerProfile = await prisma.trainerProfile.create({
     data: {
       userId: trainerUser.id,
-      firmName: 'Muthoni & Associates Consulting',
-      bio: 'Certified leadership and project management trainer with 10+ years of experience across East Africa.',
+      firmName: 'Kakai Talent Solutions',
+      bio: 'Founder of Kakai Talent Solutions. 7+ years technical recruiting across East Africa. VERIFIED recruiter.',
       hourlyRate: 5000, currency: 'KES', rating: 4.8, totalReviews: 24,
       verificationStatus: 'VERIFIED', experience: 10,
       location: 'Nairobi, Kenya', city: 'Nairobi', county: 'Nairobi',
@@ -296,9 +307,9 @@ async function main() {
   // ── Test Client ───────────────────────────────────────────────────────────
   const clientUser = await prisma.user.create({
     data: {
-      email: 'client@ptak.co.ke', phone: '+254700000003', passwordHash: clientPw,
-      firstName: 'David', lastName: 'Ochieng', name: 'David Ochieng',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face',
+      email: 'sienna.kaks@uteo-demo.ke', phone: '+254700000003', passwordHash: seekerPw,
+      firstName: 'Sienna', lastName: 'Kaks', name: 'Sienna Kaks',
+      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&crop=face',
       role: 'CLIENT', status: 'ACTIVE', emailVerified: true, phoneVerified: true,
       lastLoginAt: hoursAgo(3),
     },
@@ -309,11 +320,11 @@ async function main() {
 
   // ── Additional Professional Trainers (5 more) ──────────────────────────────
   const extraTrainers = [
-    { email: 'peter@ptak.co.ke', phone: '+254700000010', first: 'Peter', last: 'Kamau', city: 'Mombasa', county: 'Mombasa', spec: 'Digital Marketing', rate: 4000, rating: 4.5, tier: 'EXPERIENCED' as const, type: 'PROFESSIONAL' as const, category: 'Marketing & Communications', skillNames: ['Digital Marketing', 'Sales Training'], avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=face' },
-    { email: 'grace@ptak.co.ke', phone: '+254700000011', first: 'Grace', last: 'Njeri', city: 'Nakuru', county: 'Nakuru', spec: 'Data Analytics', rate: 6000, rating: 4.9, tier: 'CERTIFIED' as const, type: 'PROFESSIONAL' as const, category: 'Technology & IT', skillNames: ['Data Analytics', 'Agile/Scrum'], avatar: 'https://images.unsplash.com/photo-1589156229687-496a31ad1d1f?w=200&h=200&fit=crop&crop=face' },
-    { email: 'samuel@ptak.co.ke', phone: '+254700000012', first: 'Samuel', last: 'Otieno', city: 'Kisumu', county: 'Kisumu', spec: 'Financial Literacy', rate: 3500, rating: 4.2, tier: 'EXPERIENCED' as const, type: 'PROFESSIONAL' as const, category: 'Finance & Accounting', skillNames: ['Financial Literacy', 'Tax Advisory'], avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face' },
-    { email: 'faith@ptak.co.ke', phone: '+254700000013', first: 'Faith', last: 'Wambui', city: 'Nairobi', county: 'Nairobi', spec: 'HR Management', rate: 5500, rating: 4.7, tier: 'CERTIFIED' as const, type: 'PROFESSIONAL' as const, category: 'Business & Management', skillNames: ['HR Management', 'Leadership'], avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&crop=face' },
-    { email: 'kofi@ptak.co.ke', phone: '+254700000014', first: 'Kofi', last: 'Asante', city: 'Eldoret', county: 'Uasin Gishu', spec: 'Sales Training', rate: 3000, rating: 4.0, tier: 'EXPERIENCED' as const, type: 'PROFESSIONAL' as const, category: 'Marketing & Communications', skillNames: ['Sales Training', 'Public Speaking'], avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=face' },
+    { email: 'michael.kariuki@uteo-demo.ke', phone: '+254700000010', first: 'Michael', last: 'Kariuki', city: 'Mombasa', county: 'Mombasa', spec: 'Digital Marketing', rate: 4000, rating: 4.5, tier: 'EXPERIENCED' as const, type: 'PROFESSIONAL' as const, category: 'Marketing & Communications', skillNames: ['Digital Marketing', 'Sales Training'], avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=face' },
+    { email: 'winnie.achieng@uteo-demo.ke', phone: '+254700000011', first: 'Winnie', last: 'Achieng', city: 'Nakuru', county: 'Nakuru', spec: 'Data Analytics', rate: 6000, rating: 4.9, tier: 'CERTIFIED' as const, type: 'PROFESSIONAL' as const, category: 'Technology & IT', skillNames: ['Data Analytics', 'Agile/Scrum'], avatar: 'https://images.unsplash.com/photo-1589156229687-496a31ad1d1f?w=200&h=200&fit=crop&crop=face' },
+    { email: 'kevin.mwangi@uteo-demo.ke', phone: '+254700000012', first: 'Kevin', last: 'Mwangi', city: 'Nairobi', county: 'Nairobi', spec: 'Financial Literacy', rate: 3500, rating: 4.2, tier: 'EXPERIENCED' as const, type: 'PROFESSIONAL' as const, category: 'Finance & Accounting', skillNames: ['Financial Literacy', 'Tax Advisory'], avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face' },
+    { email: 'recruiter4@uteo-demo.ke', phone: '+254700000013', first: 'Faith', last: 'Wambui', city: 'Nairobi', county: 'Nairobi', spec: 'HR Management', rate: 5500, rating: 4.7, tier: 'CERTIFIED' as const, type: 'PROFESSIONAL' as const, category: 'Business & Management', skillNames: ['HR Management', 'Leadership'], avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop&crop=face' },
+    { email: 'recruiter5@uteo-demo.ke', phone: '+254700000014', first: 'Kofi', last: 'Asante', city: 'Eldoret', county: 'Uasin Gishu', spec: 'Sales Training', rate: 3000, rating: 4.0, tier: 'EXPERIENCED' as const, type: 'PROFESSIONAL' as const, category: 'Marketing & Communications', skillNames: ['Sales Training', 'Public Speaking'], avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=face' },
   ];
 
   const trainerUsers: any[] = [trainerUser];
@@ -321,7 +332,7 @@ async function main() {
   for (const t of extraTrainers) {
     const u = await prisma.user.create({
       data: {
-        email: t.email, phone: t.phone, passwordHash: trainerPw,
+        email: t.email, phone: t.phone, passwordHash: recruiterPw,
         firstName: t.first, lastName: t.last, name: `${t.first} ${t.last}`,
         avatar: (t as any).avatar || null,
         role: 'TRAINER', status: 'ACTIVE', emailVerified: true, phoneVerified: true,
@@ -359,17 +370,17 @@ async function main() {
 
   // ── Vocational Trainers (4 new) ───────────────────────────────────────────
   const vocationalTrainers = [
-    { email: 'joseph@ptak.co.ke', phone: '+254700000030', first: 'Joseph', last: 'Kipchoge', city: 'Thika', county: 'Kiambu', spec: 'Welding & Fabrication', rate: 1500, rating: 4.6, tier: 'CERTIFIED' as const, type: 'VOCATIONAL' as const, category: 'Construction & Building', skillNames: ['Welding & Fabrication', 'Masonry & Construction'], avatar: 'https://images.unsplash.com/photo-1548544149-4835e62ee5b3?w=200&h=200&fit=crop&crop=face' },
-    { email: 'mary@ptak.co.ke', phone: '+254700000031', first: 'Mary', last: 'Akinyi', city: 'Nairobi', county: 'Nairobi', spec: 'Hair Styling & Beauty', rate: 2000, rating: 4.8, tier: 'EXPERIENCED' as const, type: 'VOCATIONAL' as const, category: 'Beauty & Cosmetology', skillNames: ['Hair Styling', 'Barbering'], avatar: 'https://images.unsplash.com/photo-1611432579699-484f7990b127?w=200&h=200&fit=crop&crop=face' },
-    { email: 'james@ptak.co.ke', phone: '+254700000032', first: 'James', last: 'Wafula', city: 'Nakuru', county: 'Nakuru', spec: 'Electrical Installation', rate: 2500, rating: 4.4, tier: 'CERTIFIED' as const, type: 'VOCATIONAL' as const, category: 'Electrical & Electronics', skillNames: ['Electrical Wiring', 'Solar Installation'], avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=200&h=200&fit=crop&crop=face' },
-    { email: 'agnes@ptak.co.ke', phone: '+254700000033', first: 'Agnes', last: 'Chebet', city: 'Eldoret', county: 'Uasin Gishu', spec: 'Professional Cooking & Catering', rate: 1800, rating: 4.7, tier: 'EXPERIENCED' as const, type: 'VOCATIONAL' as const, category: 'Culinary & Hospitality', skillNames: ['Professional Cooking'], avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=200&fit=crop&crop=face' },
+    { email: 'joseph@uteo-demo.ke', phone: '+254700000030', first: 'Joseph', last: 'Kipchoge', city: 'Thika', county: 'Kiambu', spec: 'Welding & Fabrication', rate: 1500, rating: 4.6, tier: 'CERTIFIED' as const, type: 'VOCATIONAL' as const, category: 'Construction & Building', skillNames: ['Welding & Fabrication', 'Masonry & Construction'], avatar: 'https://images.unsplash.com/photo-1548544149-4835e62ee5b3?w=200&h=200&fit=crop&crop=face' },
+    { email: 'mary@uteo-demo.ke', phone: '+254700000031', first: 'Mary', last: 'Akinyi', city: 'Nairobi', county: 'Nairobi', spec: 'Hair Styling & Beauty', rate: 2000, rating: 4.8, tier: 'EXPERIENCED' as const, type: 'VOCATIONAL' as const, category: 'Beauty & Cosmetology', skillNames: ['Hair Styling', 'Barbering'], avatar: 'https://images.unsplash.com/photo-1611432579699-484f7990b127?w=200&h=200&fit=crop&crop=face' },
+    { email: 'james@uteo-demo.ke', phone: '+254700000032', first: 'James', last: 'Wafula', city: 'Nakuru', county: 'Nakuru', spec: 'Electrical Installation', rate: 2500, rating: 4.4, tier: 'CERTIFIED' as const, type: 'VOCATIONAL' as const, category: 'Electrical & Electronics', skillNames: ['Electrical Wiring', 'Solar Installation'], avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=200&h=200&fit=crop&crop=face' },
+    { email: 'agnes@uteo-demo.ke', phone: '+254700000033', first: 'Agnes', last: 'Chebet', city: 'Eldoret', county: 'Uasin Gishu', spec: 'Professional Cooking & Catering', rate: 1800, rating: 4.7, tier: 'EXPERIENCED' as const, type: 'VOCATIONAL' as const, category: 'Culinary & Hospitality', skillNames: ['Professional Cooking'], avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=200&fit=crop&crop=face' },
   ];
 
   const vocProfiles: any[] = [];
   for (const t of vocationalTrainers) {
     const u = await prisma.user.create({
       data: {
-        email: t.email, phone: t.phone, passwordHash: trainerPw,
+        email: t.email, phone: t.phone, passwordHash: recruiterPw,
         firstName: t.first, lastName: t.last, name: `${t.first} ${t.last}`,
         avatar: (t as any).avatar || null,
         role: 'TRAINER', status: 'ACTIVE', emailVerified: true, phoneVerified: true,
@@ -441,7 +452,7 @@ async function main() {
   await prisma.verificationRequest.create({
     data: {
       trainerId: trainerProfile.id, documentType: 'PMP Certificate',
-      documentUrl: 'https://storage.ptak.co.ke/docs/jane-pmp.pdf',
+      documentUrl: 'https://storage.uteo.com/docs/jane-pmp.pdf',
       status: 'APPROVED', reviewNote: 'PMP credential verified with PMI registry.',
       reviewedById: admin.id, reviewedAt: daysAgo(60),
     },
@@ -449,7 +460,7 @@ async function main() {
   await prisma.verificationRequest.create({
     data: {
       trainerId: vocProfiles[2].id, documentType: 'KPLC Electrician License',
-      documentUrl: 'https://storage.ptak.co.ke/docs/james-kplc.pdf',
+      documentUrl: 'https://storage.uteo.com/docs/james-kplc.pdf',
       status: 'APPROVED', reviewNote: 'License number confirmed with KPLC records.',
       reviewedById: admin.id, reviewedAt: daysAgo(75),
     },
@@ -457,20 +468,79 @@ async function main() {
   await prisma.verificationRequest.create({
     data: {
       trainerId: vocProfiles[0].id, documentType: 'Kenya Welders Association Membership',
-      documentUrl: 'https://storage.ptak.co.ke/docs/joseph-kwa.pdf',
+      documentUrl: 'https://storage.uteo.com/docs/joseph-kwa.pdf',
       status: 'PENDING',
     },
   });
   await prisma.verificationRequest.create({
     data: {
       trainerId: vocProfiles[3].id, documentType: 'Culinary Arts Certificate',
-      documentUrl: 'https://storage.ptak.co.ke/docs/agnes-culinary.pdf',
+      documentUrl: 'https://storage.uteo.com/docs/agnes-culinary.pdf',
       status: 'REJECTED', reviewNote: 'Document image is blurry and unreadable. Please re-upload a clear scan.',
       reviewedById: admin.id, reviewedAt: daysAgo(10),
     },
   });
 
-  // ── Additional Clients (3 more) ───────────────────────────────────────────
+  // ── Additional Clients / Job Seekers ─────────────────────────────────────
+  // Named seekers from PASSWORDS.md plus a few extras
+  const namedSeekerDefs = [
+    {
+      email: 'amara.osei@uteo-demo.ke', phone: '+254700000023', first: 'Amara', last: 'Osei',
+      avatar: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=200&h=200&fit=crop&crop=face',
+      headline: 'Senior Software Engineer', location: 'Nairobi, Kenya',
+      bio: 'Full-stack engineer with 6 years in fintech. Passionate about building scalable payment systems across East Africa.',
+      phone_display: '+254 712 345 678', portfolioUrl: 'https://amara.dev',
+      skills: ['Data Analytics', 'Agile/Scrum', 'Cybersecurity'],
+      exp: [
+        { company: 'Cellulant', title: 'Senior Software Engineer', location: 'Nairobi', start: new Date('2021-03-01'), isCurrent: true, desc: 'Lead engineer for Pan-African payment orchestration platform. 3M+ daily transactions.' },
+        { company: 'Jumo', title: 'Software Engineer', location: 'Cape Town / Remote', start: new Date('2018-06-01'), end: new Date('2021-02-28'), desc: 'Built microservices for mobile lending products across 8 African markets.' },
+      ],
+      edu: [{ inst: 'University of Nairobi', degree: 'BSc Computer Science', field: 'Computer Science', start: 2014, end: 2018 }],
+    },
+    {
+      email: 'fatima.diallo@uteo-demo.ke', phone: '+254700000024', first: 'Fatima', last: 'Diallo',
+      avatar: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=200&h=200&fit=crop&crop=face',
+      headline: 'Digital Marketing Manager', location: 'Nairobi, Kenya',
+      bio: 'Award-winning digital marketing professional specialising in brand growth and performance marketing for FMCG brands.',
+      phone_display: '+254 720 456 789', portfolioUrl: 'https://fatima-portfolio.co.ke',
+      skills: ['Digital Marketing', 'Sales Training', 'Public Speaking'],
+      exp: [
+        { company: 'Unilever East Africa', title: 'Digital Marketing Manager', location: 'Nairobi', start: new Date('2022-01-01'), isCurrent: true, desc: 'Lead digital campaigns across 6 East African markets. 140% YoY growth in online revenue.' },
+        { company: 'Ogilvy Kenya', title: 'Senior Brand Strategist', location: 'Nairobi', start: new Date('2019-04-01'), end: new Date('2021-12-31'), desc: 'Led brand strategy for EABL, Safaricom, and Equity Bank accounts.' },
+      ],
+      edu: [{ inst: 'Strathmore University', degree: 'BA Business Administration', field: 'Marketing', start: 2015, end: 2019 }],
+    },
+    {
+      email: 'james.mutua@uteo-demo.ke', phone: '+254700000025', first: 'James', last: 'Mutua',
+      avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=face',
+      headline: 'Finance & Treasury Analyst', location: 'Nairobi, Kenya',
+      bio: 'CPA(K) qualified finance professional with 5 years in commercial banking. Expert in financial modelling and risk analysis.',
+      phone_display: '+254 733 567 890', portfolioUrl: null,
+      skills: ['Financial Literacy', 'Tax Advisory', 'Strategic Planning'],
+      exp: [
+        { company: 'KCB Bank Kenya', title: 'Treasury Analyst', location: 'Nairobi', start: new Date('2020-07-01'), isCurrent: true, desc: 'FX trading desk, liquidity management, and regulatory reporting (CBK).' },
+        { company: 'Equity Bank', title: 'Financial Analyst', location: 'Nairobi', start: new Date('2018-01-01'), end: new Date('2020-06-30'), desc: 'Credit risk analysis, loan portfolio modelling, IFRS 9 provisions.' },
+      ],
+      edu: [
+        { inst: 'University of Nairobi', degree: 'BCom Finance', field: 'Finance', start: 2014, end: 2018 },
+        { inst: 'ICPAK', degree: 'CPA(K)', field: 'Accounting', start: 2018, end: 2020 },
+      ],
+    },
+    {
+      email: 'ciku.wanjiru@uteo-demo.ke', phone: '+254700000026', first: 'Ciku', last: 'Wanjiru',
+      avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=200&fit=crop&crop=face',
+      headline: 'HR & People Operations Lead', location: 'Nairobi, Kenya',
+      bio: 'CHRP-certified HR professional with 7 years shaping people strategy at fast-growing startups and corporates across Kenya.',
+      phone_display: '+254 701 678 901', portfolioUrl: null,
+      skills: ['HR Management', 'Leadership', 'Project Management'],
+      exp: [
+        { company: 'Twiga Foods', title: 'Head of People Operations', location: 'Nairobi', start: new Date('2021-09-01'), isCurrent: true, desc: 'Built HR function from 80 to 400 employees. Designed performance management and L&D frameworks.' },
+        { company: 'Jumia Kenya', title: 'HR Business Partner', location: 'Nairobi', start: new Date('2018-03-01'), end: new Date('2021-08-31'), desc: 'Partnered with engineering and ops leadership on talent acquisition and retention.' },
+      ],
+      edu: [{ inst: 'USIU-Africa', degree: 'BA Human Resource Management', field: 'HR Management', start: 2014, end: 2018 }],
+    },
+  ];
+
   const extraClients = [
     { email: 'alice@company.co.ke', phone: '+254700000020', first: 'Alice', last: 'Munene', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop&crop=face' },
     { email: 'brian@startup.io', phone: '+254700000021', first: 'Brian', last: 'Otieno', avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&h=200&fit=crop&crop=face' },
@@ -478,10 +548,94 @@ async function main() {
   ];
 
   const clientUsers: any[] = [clientUser];
+
+  // Create named seekers with rich profiles
+  const namedSeekerUsers: any[] = [];
+  for (const ns of namedSeekerDefs) {
+    const u = await prisma.user.create({
+      data: {
+        email: ns.email, phone: ns.phone, passwordHash: seekerPw,
+        firstName: ns.first, lastName: ns.last, name: `${ns.first} ${ns.last}`,
+        avatar: ns.avatar, role: 'CLIENT', status: 'ACTIVE',
+        emailVerified: true, phoneVerified: true, lastLoginAt: daysAgo(rndInt(0, 3)),
+      },
+    });
+    await prisma.wallet.create({ data: { userId: u.id, balance: rndInt(5000, 50000), currency: 'KES' } });
+    await prisma.jobSeekerProfile.create({
+      data: {
+        userId: u.id, headline: ns.headline, bio: ns.bio, location: ns.location,
+        phone: ns.phone_display, portfolioUrl: ns.portfolioUrl ?? null, openToWork: true,
+        linkedinUrl: `https://linkedin.com/in/${ns.first.toLowerCase()}-${ns.last.toLowerCase()}`,
+      },
+    });
+    for (const ex of ns.exp) {
+      await prisma.workExperience.create({
+        data: {
+          userId: u.id, company: ex.company, title: ex.title, location: ex.location,
+          startDate: ex.start, endDate: (ex as any).end ?? null,
+          isCurrent: (ex as any).isCurrent ?? false, description: ex.desc,
+        },
+      });
+    }
+    for (const ed of ns.edu) {
+      await prisma.education.create({
+        data: {
+          userId: u.id, institution: ed.inst, degree: ed.degree,
+          fieldOfStudy: ed.field, startYear: ed.start, endYear: ed.end,
+        },
+      });
+    }
+    for (const sn of ns.skills) {
+      if (skillMap[sn]) {
+        await prisma.userSkill.upsert({
+          where: { userId_skillId: { userId: u.id, skillId: skillMap[sn].id } },
+          update: {}, create: { userId: u.id, skillId: skillMap[sn].id, proficiency: 'ADVANCED' },
+        });
+      }
+    }
+    namedSeekerUsers.push(u);
+    clientUsers.push(u);
+  }
+
+  // Sienna Kaks — full profile
+  await prisma.jobSeekerProfile.create({
+    data: {
+      userId: clientUser.id,
+      headline: 'Digital Marketing Specialist',
+      bio: '4+ years helping brands grow their digital presence across East Africa. Specialise in performance marketing, content strategy, and social media campaigns.',
+      location: 'Nairobi, Kenya', phone: '+254 722 100 200',
+      portfolioUrl: 'https://sienna.co.ke', openToWork: true,
+      linkedinUrl: 'https://linkedin.com/in/sienna-kaks',
+      githubUrl: null,
+      resumeUrl: 'https://storage.uteo.com/resumes/sienna-kaks-cv.pdf',
+    },
+  });
+  await prisma.workExperience.createMany({
+    data: [
+      { userId: clientUser.id, company: 'WPP Scangroup', title: 'Digital Marketing Specialist', location: 'Nairobi', startDate: new Date('2022-02-01'), isCurrent: true, description: 'Lead performance marketing for FMCG clients. Managed KES 20M+ annual ad spend across Meta, Google, and TikTok.' },
+      { userId: clientUser.id, company: 'Nation Media Group', title: 'Marketing Coordinator', location: 'Nairobi', startDate: new Date('2020-06-01'), endDate: new Date('2022-01-31'), description: 'Coordinated digital campaigns for NTV, Daily Nation, and QTV brands.' },
+      { userId: clientUser.id, company: 'JWT Kenya', title: 'Marketing Intern', location: 'Nairobi', startDate: new Date('2019-09-01'), endDate: new Date('2020-05-31'), description: 'Supported creative production and social media management for Kenyan brands.' },
+    ],
+  });
+  await prisma.education.createMany({
+    data: [
+      { userId: clientUser.id, institution: 'University of Nairobi', degree: 'BA Marketing', fieldOfStudy: 'Marketing & Communications', startYear: 2015, endYear: 2019 },
+      { userId: clientUser.id, institution: 'Google', degree: 'Google Digital Marketing Certificate', fieldOfStudy: 'Digital Marketing', startYear: 2020, endYear: 2020 },
+    ],
+  });
+  for (const sn of ['Digital Marketing', 'Sales Training', 'Public Speaking', 'HR Management']) {
+    if (skillMap[sn]) {
+      await prisma.userSkill.upsert({
+        where: { userId_skillId: { userId: clientUser.id, skillId: skillMap[sn].id } },
+        update: {}, create: { userId: clientUser.id, skillId: skillMap[sn].id, proficiency: sn === 'Digital Marketing' ? 'EXPERT' : 'ADVANCED' },
+      });
+    }
+  }
+
   for (const c of extraClients) {
     const u = await prisma.user.create({
       data: {
-        email: c.email, phone: c.phone, passwordHash: clientPw,
+        email: c.email, phone: c.phone, passwordHash: seekerPw,
         firstName: c.first, lastName: c.last, name: `${c.first} ${c.last}`,
         avatar: (c as any).avatar || null,
         role: 'CLIENT', status: 'ACTIVE', emailVerified: true, phoneVerified: true,
@@ -492,10 +646,284 @@ async function main() {
     clientUsers.push(u);
   }
 
+  // ── Companies + Recruiter links ───────────────────────────────────────────
+  const [
+    companyKakai, companySafaricom, companyKCB, companyAndela, companyTwiga,
+  ] = await Promise.all([
+    prisma.company.create({
+      data: {
+        name: 'Kakai Talent Solutions', industry: 'Staffing & Recruitment',
+        description: 'East Africa\'s premier technical recruiting firm. We connect top talent with high-growth companies across Kenya, Uganda, and Tanzania.',
+        website: 'https://kakairecruiting.co.ke', size: 'SMALL',
+        location: 'Nairobi, Kenya', isVerified: true,
+        logoUrl: 'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=200&h=200&fit=crop',
+      },
+    }),
+    prisma.company.create({
+      data: {
+        name: 'Safaricom PLC', industry: 'Telecommunications',
+        description: 'Kenya\'s leading mobile network operator and technology company. Home of M-PESA — Africa\'s largest mobile money service.',
+        website: 'https://safaricom.co.ke', size: 'ENTERPRISE',
+        location: 'Nairobi, Kenya', isVerified: true,
+        logoUrl: 'https://images.unsplash.com/photo-1563986768494-4dee2763ff3f?w=200&h=200&fit=crop',
+      },
+    }),
+    prisma.company.create({
+      data: {
+        name: 'KCB Group', industry: 'Banking & Financial Services',
+        description: 'The largest commercial bank in Kenya and one of the largest in East Africa. Operating in 7 countries with 500+ branches.',
+        website: 'https://kcbgroup.com', size: 'LARGE',
+        location: 'Nairobi, Kenya', isVerified: true,
+        logoUrl: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=200&h=200&fit=crop',
+      },
+    }),
+    prisma.company.create({
+      data: {
+        name: 'Andela Kenya', industry: 'Technology',
+        description: 'Global talent network that connects companies with vetted software engineers from Africa. 3,000+ engineers across 100+ countries.',
+        website: 'https://andela.com', size: 'LARGE',
+        location: 'Nairobi, Kenya', isVerified: true,
+        logoUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=200&h=200&fit=crop',
+      },
+    }),
+    prisma.company.create({
+      data: {
+        name: 'Twiga Foods', industry: 'FMCG & AgriTech',
+        description: 'Africa\'s leading B2B food distribution platform. Using technology to connect farmers with food businesses, reducing waste and improving incomes.',
+        website: 'https://twigafoods.com', size: 'MEDIUM',
+        location: 'Nairobi, Kenya', isVerified: true,
+        logoUrl: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=200&h=200&fit=crop',
+      },
+    }),
+  ]);
+
+  // Link recruiters to companies
+  const michaelUser = await prisma.user.findUnique({ where: { email: 'michael.kariuki@uteo-demo.ke' } });
+  const winnieUser = await prisma.user.findUnique({ where: { email: 'winnie.achieng@uteo-demo.ke' } });
+  const kevinUser = await prisma.user.findUnique({ where: { email: 'kevin.mwangi@uteo-demo.ke' } });
+
+  await prisma.recruiter.createMany({
+    data: [
+      { userId: trainerUser.id, companyId: companyKakai.id, title: 'Founder & Lead Recruiter' },
+      { userId: michaelUser!.id, companyId: companySafaricom.id, title: 'Senior Talent Acquisition Specialist' },
+      { userId: winnieUser!.id, companyId: companyAndela.id, title: 'Technical Recruiter' },
+      { userId: kevinUser!.id, companyId: companyKCB.id, title: 'HR & Talent Manager' },
+    ],
+  });
+
+  // ── Jobs (12 rich postings) ───────────────────────────────────────────────
+  const jobDefs = [
+    {
+      company: companyKakai, poster: trainerUser, title: 'Senior Product Designer (UX/UI)',
+      description: 'We are looking for a talented Senior Product Designer to join our client — a fast-growing fintech startup in Nairobi. You will own the end-to-end design process for web and mobile products, conducting user research, building wireframes, prototypes, and high-fidelity designs.\n\nYou will work closely with the engineering and product teams to ship polished, accessible experiences for millions of Kenyan users.',
+      requirements: '• 4+ years of product design experience\n• Proficiency in Figma and design systems\n• Strong portfolio of shipped mobile/web products\n• Experience with user research and usability testing\n• Background in fintech or e-commerce is a bonus',
+      location: 'Nairobi, Kenya', jobType: 'FULL_TIME', salaryMin: 150000, salaryMax: 200000,
+      status: 'ACTIVE', skillNames: ['Leadership', 'Project Management'],
+      hiringStages: ['Application Review', 'Portfolio Review', 'Design Challenge', 'Final Interview', 'Offer'],
+    },
+    {
+      company: companySafaricom, poster: michaelUser!, title: 'Software Engineer — M-PESA Platform',
+      description: 'Join the team that powers M-PESA — the world\'s most successful mobile money platform. As a Software Engineer on the M-PESA Platform team, you will design, build, and scale the services that handle 10 billion+ transactions annually.\n\nYou will work with microservices, event-driven architectures, and high-throughput distributed systems. This is a rare opportunity to work at true scale on infrastructure that changes lives across Africa.',
+      requirements: '• BSc Computer Science or equivalent\n• 3+ years backend engineering (Java, Go, or Node.js)\n• Experience with distributed systems and high-throughput APIs\n• Familiarity with Kubernetes and cloud infrastructure (AWS/GCP)\n• Strong understanding of system design and scalability',
+      location: 'Westlands, Nairobi', jobType: 'FULL_TIME', salaryMin: 200000, salaryMax: 280000,
+      status: 'ACTIVE', skillNames: ['Data Analytics', 'Agile/Scrum'],
+      hiringStages: ['CV Screening', 'Online Assessment', 'Technical Interview', 'System Design Round', 'HR Interview', 'Offer'],
+    },
+    {
+      company: companyKCB, poster: kevinUser!, title: 'Treasury & FX Analyst',
+      description: 'KCB Group is seeking a skilled Treasury & FX Analyst to join our Treasury division. You will support the management of the bank\'s liquidity, foreign exchange, and fixed income portfolios.\n\nKey responsibilities include FX trading, liquidity forecasting, regulatory reporting to the CBK, and supporting ALCO (Asset & Liability Committee) with analytics and reporting.',
+      requirements: '• BCom Finance, Economics, or related degree\n• CPA(K) or CFA Level I preferred\n• 2–4 years in treasury, banking, or financial analysis\n• Proficiency in Bloomberg Terminal\n• Strong Excel/financial modelling skills',
+      location: 'Upper Hill, Nairobi', jobType: 'FULL_TIME', salaryMin: 110000, salaryMax: 160000,
+      status: 'ACTIVE', skillNames: ['Financial Literacy', 'Tax Advisory'],
+      hiringStages: ['Application Review', 'Technical Test', 'Panel Interview', 'Offer'],
+    },
+    {
+      company: companyAndela, poster: winnieUser!, title: 'Full-Stack Engineer (React + Node.js)',
+      description: 'Andela is looking for a Full-Stack Engineer to join a global product team. You will build features across the full stack using React and Node.js, participate in architecture discussions, write tests, and mentor junior engineers.\n\nThis is a remote-first role, working with engineers across multiple time zones to ship high-quality software to enterprise customers worldwide.',
+      requirements: '• 4+ years of full-stack engineering experience\n• Strong React (hooks, context, performance optimisation)\n• Node.js/TypeScript backend experience\n• Familiarity with PostgreSQL and Redis\n• Experience with CI/CD pipelines (GitHub Actions preferred)\n• Clear written communication in English (remote-first culture)',
+      location: 'Remote (Kenya)', jobType: 'REMOTE', salaryMin: 250000, salaryMax: 350000,
+      status: 'ACTIVE', skillNames: ['Data Analytics', 'Cybersecurity'],
+      hiringStages: ['Application Review', 'Technical Screening', 'Take-Home Project', 'Technical Interview', 'Culture Fit Interview', 'Offer'],
+    },
+    {
+      company: companyTwiga, poster: trainerUser, title: 'Digital Marketing Manager',
+      description: 'Twiga Foods is looking for a data-driven Digital Marketing Manager to own our B2B and D2C marketing channels. You will lead a team of 3 and manage a monthly digital budget of KES 5M+, driving acquisition and retention for our platform of 20,000+ food vendors.\n\nThis role owns SEO, paid search, social media, email/SMS marketing, and influencer partnerships across all Twiga digital properties.',
+      requirements: '• 5+ years of digital marketing experience\n• Proven experience managing large ad budgets (Meta, Google)\n• Strong analytical skills (Google Analytics 4, Looker Studio)\n• Experience in FMCG, agritech, or B2B marketplace is a plus\n• Team management experience preferred',
+      location: 'Nairobi, Kenya', jobType: 'FULL_TIME', salaryMin: 120000, salaryMax: 170000,
+      status: 'ACTIVE', skillNames: ['Digital Marketing', 'Sales Training'],
+      hiringStages: ['Application Review', 'Marketing Case Study', 'Panel Interview', 'CEO Interview', 'Offer'],
+    },
+    {
+      company: companySafaricom, poster: michaelUser!, title: 'HR Business Partner — Technology',
+      description: 'Safaricom is hiring an HR Business Partner to support the Technology & Digital division (900+ employees). You will be the people strategy lead for engineering, product, and data teams — partnering with senior leadership on talent acquisition, performance management, succession planning, and culture initiatives.',
+      requirements: '• 5+ years HR experience, with at least 2 as an HRBP\n• CHRP certification or equivalent\n• Experience supporting technology or engineering teams strongly preferred\n• Strong knowledge of Kenyan labour law\n• Data-driven approach to people analytics',
+      location: 'Westlands, Nairobi', jobType: 'FULL_TIME', salaryMin: 130000, salaryMax: 180000,
+      status: 'ACTIVE', skillNames: ['HR Management', 'Leadership'],
+      hiringStages: ['CV Review', 'HR Screening Call', 'Panel Interview', 'Case Study Presentation', 'Offer'],
+    },
+    {
+      company: companyKakai, poster: trainerUser, title: 'Data Scientist — Consumer Analytics',
+      description: 'A leading e-commerce platform (placed by Kakai Talent Solutions) is looking for a Data Scientist to join their Consumer Analytics team. You will build predictive models for customer lifetime value, churn prediction, and personalisation, using Python and SQL on datasets with millions of rows.\n\nYou will partner closely with the product and engineering teams to productionise models and measure business impact.',
+      requirements: '• MSc/BSc in Data Science, Statistics, Mathematics, or Computer Science\n• 3+ years of applied data science or machine learning experience\n• Proficiency in Python (pandas, scikit-learn, XGBoost)\n• Strong SQL skills (PostgreSQL or BigQuery)\n• Experience with A/B testing and statistical analysis\n• Portfolio of shipped models with measurable business impact',
+      location: 'Nairobi, Kenya', jobType: 'HYBRID', salaryMin: 180000, salaryMax: 230000,
+      status: 'ACTIVE', skillNames: ['Data Analytics', 'Agile/Scrum'],
+      hiringStages: ['Application Review', 'Take-Home Case Study', 'Technical Interview', 'Final Round', 'Offer'],
+    },
+    {
+      company: companyAndela, poster: winnieUser!, title: 'DevOps Engineer — Cloud Infrastructure',
+      description: 'Andela\'s platform engineering team is looking for a DevOps Engineer to manage and improve our cloud infrastructure. You will own Kubernetes cluster operations, CI/CD pipelines, monitoring, and cost optimisation across AWS and GCP, supporting 3,000+ engineers on the Andela platform.',
+      requirements: '• 3+ years of DevOps / platform engineering experience\n• Deep expertise in Kubernetes (EKS or GKE)\n• Infrastructure as Code (Terraform preferred)\n• CI/CD pipeline engineering (GitHub Actions, ArgoCD)\n• Monitoring & observability (Datadog, Prometheus/Grafana)\n• AWS or GCP professional certification is a plus',
+      location: 'Remote (Kenya)', jobType: 'REMOTE', salaryMin: 220000, salaryMax: 300000,
+      status: 'ACTIVE', skillNames: ['Cybersecurity', 'Data Analytics'],
+      hiringStages: ['Application Review', 'Technical Screening', 'Infrastructure Assessment', 'Team Interview', 'Offer'],
+    },
+    {
+      company: companyKCB, poster: kevinUser!, title: 'Relationship Manager — Corporate Banking',
+      description: 'KCB is hiring a Relationship Manager for the Corporate Banking division. You will manage a portfolio of 30–50 corporate clients with a total lending exposure of KES 2B+, responsible for growing wallet share, cross-selling products, and ensuring portfolio quality.',
+      requirements: '• BCom, Finance, or Economics degree\n• 4+ years in corporate or commercial banking\n• Proven track record of meeting or exceeding revenue targets\n• Strong credit analysis and financial modelling skills\n• Existing corporate banking relationships in Nairobi a strong plus',
+      location: 'Upper Hill, Nairobi', jobType: 'FULL_TIME', salaryMin: 140000, salaryMax: 200000,
+      status: 'ACTIVE', skillNames: ['Financial Literacy', 'Sales Training'],
+      hiringStages: ['Application Review', 'Credit Skills Assessment', 'Panel Interview', 'Offer'],
+    },
+    {
+      company: companyTwiga, poster: trainerUser, title: 'Operations Manager — Last Mile Delivery',
+      description: 'Twiga Foods is expanding its delivery network and needs an experienced Operations Manager to lead last-mile logistics across Nairobi. You will manage a team of 40+ riders and 3 regional supervisors, overseeing daily routes, SLA compliance, and cost per delivery metrics.',
+      requirements: '• 5+ years of logistics or supply chain management experience\n• Experience managing large field teams (30+ direct reports)\n• Proficiency with route optimisation software (TransVirtual, Circuit)\n• Strong analytical skills — comfortable with daily KPI dashboards\n• BSc Supply Chain, Logistics, or Industrial Engineering preferred',
+      location: 'Industrial Area, Nairobi', jobType: 'FULL_TIME', salaryMin: 100000, salaryMax: 140000,
+      status: 'ACTIVE', skillNames: ['Project Management', 'Leadership'],
+      hiringStages: ['CV Screen', 'Operations Case Study', 'Field Assessment', 'Final Interview', 'Offer'],
+    },
+    {
+      company: companyKakai, poster: trainerUser, title: 'Content & Social Media Specialist',
+      description: 'A growing EdTech startup (placed by Kakai Talent Solutions) is looking for a creative Content & Social Media Specialist to build and manage their brand presence. You will create short-form video content, manage LinkedIn and Instagram, write SEO-optimised blog posts, and track performance across channels.',
+      requirements: '• 2+ years of content creation or social media management experience\n• Strong portfolio of video, graphic, and written content\n• Proficiency with Canva and Adobe tools (Premiere, Lightroom)\n• Basic SEO knowledge\n• Experience with edtech or consumer apps is a bonus',
+      location: 'Nairobi, Kenya', jobType: 'PART_TIME', salaryMin: 40000, salaryMax: 65000,
+      status: 'ACTIVE', skillNames: ['Digital Marketing', 'Public Speaking'],
+      hiringStages: ['Application & Portfolio Review', 'Creative Assessment', 'Interview', 'Offer'],
+    },
+    {
+      company: companySafaricom, poster: michaelUser!, title: 'Product Manager — M-PESA Super App',
+      description: 'Safaricom is looking for a talented Product Manager to drive the roadmap for the M-PESA Super App — a financial services platform with 32M+ users. You will own 2–3 key product verticals, conducting user research, writing PRDs, coordinating with engineering, design, and legal, and tracking success metrics post-launch.',
+      requirements: '• 4+ years of product management experience\n• Experience with financial services, payments, or consumer mobile apps\n• Strong data analysis skills (SQL, analytics dashboards)\n• Excellent written and verbal communication\n• MBA or Computer Science background preferred but not required',
+      location: 'Westlands, Nairobi', jobType: 'FULL_TIME', salaryMin: 210000, salaryMax: 280000,
+      status: 'ACTIVE', skillNames: ['Project Management', 'Strategic Planning'],
+      hiringStages: ['Application Review', 'PM Case Study', 'Product Critique', 'Panel Interview', 'Executive Interview', 'Offer'],
+    },
+  ];
+
+  const createdJobs: any[] = [];
+  for (const jd of jobDefs) {
+    const job = await prisma.job.create({
+      data: {
+        companyId: jd.company.id, postedById: jd.poster.id,
+        title: jd.title, description: jd.description,
+        requirements: jd.requirements, location: jd.location,
+        jobType: jd.jobType as any, salaryMin: jd.salaryMin, salaryMax: jd.salaryMax,
+        currency: 'KES', status: jd.status as any,
+        hiringStages: jd.hiringStages,
+        expiresAt: daysFrom(rndInt(30, 90)),
+      },
+    });
+    for (const sn of jd.skillNames) {
+      if (skillMap[sn]) {
+        await prisma.jobSkill.upsert({
+          where: { jobId_skillId: { jobId: job.id, skillId: skillMap[sn].id } },
+          update: {}, create: { jobId: job.id, skillId: skillMap[sn].id },
+        });
+      }
+    }
+    createdJobs.push(job);
+  }
+
+  // ── Applications — Sienna applies to 4 jobs ───────────────────────────────
+  const siennaApps = [
+    { job: createdJobs[4], status: 'INTERVIEW', cover: 'I have 4 years of performance marketing experience managing KES 20M+ budgets. I\'d love to bring that expertise to Twiga Foods and help scale your digital channels.', scheduledAt: daysFrom(3), meetingLink: 'https://meet.google.com/twg-mkt-int' },
+    { job: createdJobs[10], status: 'SHORTLISTED', cover: 'Content creation is my passion. I\'ve built social media audiences from 0 to 50K+ and created video campaigns that exceeded engagement benchmarks by 3x. Portfolio attached.', scheduledAt: null, meetingLink: null },
+    { job: createdJobs[5], status: 'REVIEWED', cover: 'As an HRBP with experience supporting product and engineering teams, I am excited about this opportunity at Safaricom and believe I can hit the ground running.', scheduledAt: null, meetingLink: null },
+    { job: createdJobs[0], status: 'SUBMITTED', cover: 'I am a creative professional with strong collaboration skills and a keen interest in UX. While my background is in marketing, I have been building my design portfolio and would welcome the opportunity.', scheduledAt: null, meetingLink: null },
+  ];
+  for (const app of siennaApps) {
+    await prisma.application.create({
+      data: {
+        userId: clientUser.id, jobId: app.job.id, status: app.status as any,
+        coverLetter: app.cover,
+        scheduledAt: app.scheduledAt, meetingLink: app.meetingLink,
+        appliedAt: daysAgo(rndInt(1, 14)),
+      },
+    });
+  }
+
+  // Amara (seeker) applies to 3 engineering jobs
+  if (namedSeekerUsers[0]) {
+    const amaraApps = [
+      { job: createdJobs[1], status: 'SHORTLISTED', cover: 'I have 6 years of fintech engineering experience building high-throughput payment systems, directly aligned with the M-PESA Platform role. I am excited to contribute to Safaricom\'s engineering team.' },
+      { job: createdJobs[3], status: 'INTERVIEW', cover: 'Remote-first, full-stack, TypeScript — this Andela role is exactly my stack. I have shipped 12+ features to production in the past 2 years and would love to bring that energy to this team.' },
+      { job: createdJobs[6], status: 'SUBMITTED', cover: 'My background in fintech engineering gives me strong foundations for data science work. I have been building ML models in Python for the past year and am excited to transition to this role.' },
+    ];
+    for (const app of amaraApps) {
+      await prisma.application.create({
+        data: {
+          userId: namedSeekerUsers[0].id, jobId: app.job.id, status: app.status as any,
+          coverLetter: app.cover, appliedAt: daysAgo(rndInt(1, 10)),
+        },
+      });
+    }
+  }
+
+  // James (seeker) applies to finance jobs
+  if (namedSeekerUsers[2]) {
+    await prisma.application.create({
+      data: {
+        userId: namedSeekerUsers[2].id, jobId: createdJobs[2].id, status: 'INTERVIEW' as any,
+        coverLetter: 'CPA(K) qualified with 5 years of treasury and financial analysis experience at KCB and Equity Bank. This Treasury Analyst role aligns perfectly with my expertise.',
+        scheduledAt: daysFrom(2), meetingLink: 'https://meet.google.com/kcb-trs-int',
+        appliedAt: daysAgo(7),
+      },
+    });
+    await prisma.application.create({
+      data: {
+        userId: namedSeekerUsers[2].id, jobId: createdJobs[8].id, status: 'REVIEWED' as any,
+        coverLetter: 'Experienced in credit analysis and corporate client portfolio management from my time at KCB and Equity Bank.',
+        appliedAt: daysAgo(5),
+      },
+    });
+  }
+
+  // ── Saved Jobs — Sienna saves 3 jobs ─────────────────────────────────────
+  await prisma.savedJob.createMany({
+    data: [
+      { userId: clientUser.id, jobId: createdJobs[1].id },
+      { userId: clientUser.id, jobId: createdJobs[3].id },
+      { userId: clientUser.id, jobId: createdJobs[11].id },
+    ],
+  });
+  // Amara saves 2 jobs
+  if (namedSeekerUsers[0]) {
+    await prisma.savedJob.createMany({
+      data: [
+        { userId: namedSeekerUsers[0].id, jobId: createdJobs[7].id },
+        { userId: namedSeekerUsers[0].id, jobId: createdJobs[11].id },
+      ],
+    });
+  }
+
+  // ── Job Interactions — view/click events for feed data ────────────────────
+  for (let i = 0; i < 20; i++) {
+    const seeker = clientUsers[i % clientUsers.length];
+    const job = createdJobs[i % createdJobs.length];
+    await prisma.jobInteraction.create({
+      data: {
+        userId: seeker.id, jobId: job.id,
+        action: rnd(['view', 'view', 'view', 'click', 'save']),
+        createdAt: daysAgo(rndInt(0, 7)),
+      },
+    });
+  }
+
   // ── Team Members (Jane Muthoni's firm) ─────────────────────────────────────
   // Find Peter Kamau and Grace Njeri from the extra trainers
-  const peterUser = await prisma.user.findUnique({ where: { email: 'peter@ptak.co.ke' } });
-  const graceUser = await prisma.user.findUnique({ where: { email: 'grace@ptak.co.ke' } });
+  const peterUser = await prisma.user.findUnique({ where: { email: 'michael.kariuki@uteo-demo.ke' } });
+  const graceUser = await prisma.user.findUnique({ where: { email: 'winnie.achieng@uteo-demo.ke' } });
 
   // Jane Muthoni (trainerUser) is the firm owner
   await prisma.teamMember.create({
@@ -545,7 +973,7 @@ async function main() {
   }
 
   // ── Departments (Jane Muthoni's firm) ──────────────────────────────────────
-  const samuelUser = await prisma.user.findUnique({ where: { email: 'samuel@ptak.co.ke' } });
+  const samuelUser = await prisma.user.findUnique({ where: { email: 'kevin.mwangi@uteo-demo.ke' } });
 
   // Find the team member records we just created
   const janeTeamMember = await prisma.teamMember.findUnique({
@@ -651,7 +1079,7 @@ async function main() {
     // Create owner user
     const ownerUser = await prisma.user.create({
       data: {
-        email: o.email, phone: o.phone, passwordHash: trainerPw,
+        email: o.email, phone: o.phone, passwordHash: recruiterPw,
         firstName: o.first, lastName: o.last, name: `${o.first} ${o.last}`,
         avatar: o.avatar, role: 'TRAINER', status: 'ACTIVE',
         emailVerified: true, phoneVerified: true, lastLoginAt: daysAgo(rndInt(0, 5)),
@@ -691,7 +1119,7 @@ async function main() {
       const con = org.consultants[c];
       const conUser = await prisma.user.create({
         data: {
-          email: con.email, phone: con.phone, passwordHash: trainerPw,
+          email: con.email, phone: con.phone, passwordHash: recruiterPw,
           firstName: con.first, lastName: con.last, name: `${con.first} ${con.last}`,
           avatar: con.avatar, role: 'TRAINER', status: 'ACTIVE',
           emailVerified: true, phoneVerified: true, lastLoginAt: daysAgo(rndInt(0, 10)),
@@ -740,7 +1168,7 @@ async function main() {
         scheduledAt: status === 'COMPLETED' ? daysAgo(rndInt(5, 60)) : daysFrom(rndInt(1, 30)),
         duration: rnd([60, 90, 120, 180]),
         location: rnd(['Nairobi CBD', 'Westlands', 'Karen', 'Online', 'Mombasa']),
-        meetingLink: sessions[i % sessions.length] === 'VIRTUAL' ? 'https://meet.jit.si/ptak-session-' + i : null,
+        meetingLink: sessions[i % sessions.length] === 'VIRTUAL' ? 'https://meet.jit.si/uteo-session-' + i : null,
         completedAt: status === 'COMPLETED' ? daysAgo(rndInt(1, 30)) : null,
         cancellationReason: status === 'CANCELLED' ? 'Schedule conflict' : null,
       },
@@ -976,20 +1404,29 @@ async function main() {
   }
 
   // ── Summary ───────────────────────────────────────────────────────────────
-  console.log('\nPTAK seed complete!\n');
-  console.log('  admin@ptak.co.ke       / Admin2026!    — SUPER_ADMIN');
-  console.log('  finance@ptak.co.ke     / Admin2026!    — FINANCE_ADMIN');
-  console.log('  ops@ptak.co.ke         / Admin2026!    — ADMIN');
-  console.log('  support@ptak.co.ke     / Admin2026!    — SUPPORT');
-  console.log('  trainer@ptak.co.ke     / Trainer2026!  — TRAINER (Jane Muthoni, PROFESSIONAL/CERTIFIED, 4.8 rating)');
-  console.log('  client@ptak.co.ke      / Client2026!   — CLIENT (David Ochieng)');
-  console.log('  + 5 professional trainers (peter, grace, samuel, faith, kofi @ptak.co.ke / Trainer2026!)');
-  console.log('  + 4 vocational trainers (joseph, mary, james, agnes @ptak.co.ke / Trainer2026!)');
-  console.log('  + 3 additional clients (alice@company.co.ke, brian@startup.io, sylvia@ngo.org / Client2026!)');
-  console.log('  24 skills (12 professional + 12 vocational), 16 categories (8 professional + 8 vocational)');
+  console.log('\nUteo seed complete!\n');
+  console.log('  admin@uteo.com                    / Admin2026!      — SUPER_ADMIN');
+  console.log('  finance@uteo.com                  / Admin2026!      — FINANCE_ADMIN');
+  console.log('  ops@uteo.com                      / Admin2026!      — ADMIN');
+  console.log('  support@uteo.com                  / Admin2026!      — SUPPORT');
+  console.log('  benjamin.kakai@uteo-demo.ke       / Recruiter2026!  — TRAINER/RECRUITER (Kakai Talent Solutions, 12 jobs posted)');
+  console.log('  michael.kariuki@uteo-demo.ke      / Recruiter2026!  — TRAINER/RECRUITER (Safaricom PLC)');
+  console.log('  winnie.achieng@uteo-demo.ke       / Recruiter2026!  — TRAINER/RECRUITER (Andela Kenya)');
+  console.log('  kevin.mwangi@uteo-demo.ke         / Recruiter2026!  — TRAINER/RECRUITER (KCB Group)');
+  console.log('  sienna.kaks@uteo-demo.ke          / Seeker2026!     — CLIENT/JOB SEEKER (4 applications, 3 saved jobs)');
+  console.log('  amara.osei@uteo-demo.ke           / Seeker2026!     — CLIENT/JOB SEEKER (3 applications, fintech engineer)');
+  console.log('  fatima.diallo@uteo-demo.ke        / Seeker2026!     — CLIENT/JOB SEEKER (digital marketing)');
+  console.log('  james.mutua@uteo-demo.ke          / Seeker2026!     — CLIENT/JOB SEEKER (2 applications, CPA(K) finance)');
+  console.log('  ciku.wanjiru@uteo-demo.ke         / Seeker2026!     — CLIENT/JOB SEEKER (HR & People Ops)');
+  console.log('  5 companies: Kakai Talent Solutions, Safaricom, KCB, Andela, Twiga Foods');
+  console.log('  12 jobs across 5 companies (salary ranges, stages, skills)');
+  console.log('  9 applications (various statuses: SUBMITTED→INTERVIEW)');
+  console.log('  5 saved jobs, 20 job interactions');
+  console.log('  Rich seeker profiles: headline, bio, work experience, education, skills');
+  console.log('  24 skills, 16 categories');
   console.log('  3 subscription plans (Basic/Professional/Enterprise)');
   console.log('  2 commission rules (Default 10%, Premium 7%)');
-  console.log('  3 team members (Jane=OWNER, Peter=CONSULTANT, Grace=ASSOCIATE) under trainer@ptak.co.ke firm');
+  console.log('  3 team members under benjamin.kakai@uteo-demo.ke firm');
   console.log('  3 departments (HR & Strategy, Financial Training, ICT & Digital Skills)');
   console.log('  15 bookings with escrows, status logs, reviews');
   console.log('  3 conversations with messages');

@@ -9,6 +9,7 @@ import * as bcrypt from 'bcrypt';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../common/services/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { BrevoService } from '../../common/services/brevo.service';
 import { pageParams, paginate } from '../../common/dto/pagination.dto';
 import {
   CreateApplicationDto,
@@ -22,6 +23,7 @@ export class ApplicationsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly brevo: BrevoService,
   ) {}
 
   async create(userId: string, dto: CreateApplicationDto) {
@@ -278,7 +280,16 @@ export class ApplicationsService {
     const application = await this.prisma.application.findUnique({
       where: { id },
       include: {
-        job: { select: { companyId: true, title: true } },
+        job: {
+          select: {
+            id: true,
+            companyId: true,
+            title: true,
+            postedById: true,
+            company: { select: { name: true } },
+          },
+        },
+        user: { select: { id: true, email: true, firstName: true, lastName: true } },
       },
     });
     if (!application) throw new NotFoundException('Application not found');
@@ -301,19 +312,94 @@ export class ApplicationsService {
       },
     });
 
-    // Fire an in-app notification to the applicant about the status change.
-    // Use fire-and-forget so a notification failure never blocks the response.
+    const applicant = application.user;
+    const jobTitle = application.job.title;
+    const companyName = application.job.company?.name ?? 'the company';
+    const firstName = applicant?.firstName ?? 'there';
+    const applicantEmail = applicant?.email;
+    const recruiterId = application.job.postedById;
+
+    // In-app notification
     this.notifications
       .createInApp(
         application.userId,
         'APPLICATION_STATUS_UPDATE',
         'Application Status Updated',
-        `Your application for "${application.job.title}" has been updated to ${dto.status}.`,
-        { applicationId: id, jobTitle: application.job.title, status: dto.status },
+        `Your application for "${jobTitle}" has been updated to ${dto.status}.`,
+        { applicationId: id, jobTitle, status: dto.status },
       )
       .catch(() => null);
 
+    // Email + chat message for key transitions
+    const statusMessages: Record<string, { subject: string; html: string; chat: string }> = {
+      HIRED: {
+        subject: `Congratulations! You've been hired — ${jobTitle}`,
+        html: `<p>Hi ${firstName},</p><p>We are thrilled to inform you that you have been <strong>selected and hired</strong> for the <strong>${jobTitle}</strong> position at <strong>${companyName}</strong>.</p><p>Our team will be reaching out shortly with your onboarding details. Welcome aboard!</p><p>Best regards,<br/>${companyName}</p>`,
+        chat: `🎉 Congratulations ${firstName}! You have been <b>hired</b> for the ${jobTitle} role at ${companyName}. Welcome to the team! Our team will reach out shortly with onboarding details.`,
+      },
+      OFFER: {
+        subject: `Job Offer — ${jobTitle} at ${companyName}`,
+        html: `<p>Hi ${firstName},</p><p>We are pleased to extend an <strong>offer of employment</strong> for the <strong>${jobTitle}</strong> position at <strong>${companyName}</strong>.</p><p>Please respond to confirm your acceptance. We look forward to welcoming you to the team!</p><p>Best regards,<br/>${companyName}</p>`,
+        chat: `🎉 Hi ${firstName}! We are happy to extend an <b>offer</b> for the ${jobTitle} role at ${companyName}. Please confirm your acceptance at your earliest convenience.`,
+      },
+      INTERVIEW: {
+        subject: `Interview Invitation — ${jobTitle} at ${companyName}`,
+        html: `<p>Hi ${firstName},</p><p>Congratulations! You have been <strong>shortlisted for an interview</strong> for the <strong>${jobTitle}</strong> position at <strong>${companyName}</strong>.</p><p>Our team will be in touch to confirm the schedule. Prepare well — we are excited to meet you!</p><p>Best regards,<br/>${companyName}</p>`,
+        chat: `👋 Hi ${firstName}! You've been shortlisted for an <b>interview</b> for the ${jobTitle} role at ${companyName}. We'll share schedule details shortly. Good luck!`,
+      },
+      SHORTLISTED: {
+        subject: `You've been shortlisted — ${jobTitle}`,
+        html: `<p>Hi ${firstName},</p><p>Great news! Your application for <strong>${jobTitle}</strong> at <strong>${companyName}</strong> has been <strong>shortlisted</strong>.</p><p>We will be in touch with next steps soon.</p><p>Best regards,<br/>${companyName}</p>`,
+        chat: `✅ Hi ${firstName}! Your application for ${jobTitle} at ${companyName} has been <b>shortlisted</b>. We'll be in touch with next steps soon.`,
+      },
+      REJECTED: {
+        subject: `Application Update — ${jobTitle}`,
+        html: `<p>Hi ${firstName},</p><p>Thank you for your interest in the <strong>${jobTitle}</strong> position at <strong>${companyName}</strong>.</p><p>After careful consideration, we have decided to move forward with other candidates at this time. We appreciate the time you invested and encourage you to apply for future opportunities.</p><p>Best regards,<br/>${companyName}</p>`,
+        chat: `Hi ${firstName}, thank you for applying for the ${jobTitle} role at ${companyName}. After careful review we have decided to proceed with other candidates. We appreciate your time and encourage you to apply for future openings.`,
+      },
+    };
+
+    const msg = statusMessages[dto.status];
+    if (msg) {
+      // Send email
+      if (applicantEmail) {
+        this.brevo.sendTransactionalEmail(applicantEmail, msg.subject, msg.html).catch(() => null);
+      }
+
+      // Send in-app chat message in the applicant↔recruiter thread
+      this.sendStatusChatMessage(application.userId, recruiterId, msg.chat).catch(() => null);
+    }
+
     return updated;
+  }
+
+  private async sendStatusChatMessage(applicantId: string, recruiterId: string, content: string): Promise<void> {
+    // Find existing conversation between applicant and recruiter
+    const conv = await this.prisma.conversation.findFirst({
+      where: {
+        AND: [
+          { participants: { some: { userId: applicantId, leftAt: null } } },
+          { participants: { some: { userId: recruiterId, leftAt: null } } },
+        ],
+      },
+      select: { id: true },
+    });
+    if (!conv) return;
+
+    await this.prisma.message.create({
+      data: {
+        conversationId: conv.id,
+        senderId: recruiterId,
+        content,
+        messageType: 'TEXT',
+      },
+    });
+
+    // Bump conversation updatedAt
+    await this.prisma.conversation.update({
+      where: { id: conv.id },
+      data: { updatedAt: new Date() },
+    });
   }
 
   async withdraw(id: string, userId: string, userRole?: string) {

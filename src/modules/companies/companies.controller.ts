@@ -33,6 +33,11 @@ export class CompaniesController {
     return this.svc.findAll(dto);
   }
 
+  @Get('mine')
+  findMine(@CurrentUser() user: JwtUser) {
+    return this.svc.findMine(user.id);
+  }
+
   @Public()
   @Get(':id')
   findOne(@Param('id') id: string) {

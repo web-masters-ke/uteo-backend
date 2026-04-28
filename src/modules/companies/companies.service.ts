@@ -66,6 +66,20 @@ export class CompaniesService {
     return paginate(items, total, page, limit);
   }
 
+  async findMine(userId: string) {
+    return this.prisma.company.findFirst({
+      where: { recruiters: { some: { userId } } },
+      include: {
+        _count: { select: { jobs: true, recruiters: true } },
+        recruiters: {
+          include: {
+            user: { select: { id: true, email: true, firstName: true, lastName: true, avatar: true } },
+          },
+        },
+      },
+    });
+  }
+
   async findOne(id: string) {
     const company = await this.prisma.company.findUnique({
       where: { id },

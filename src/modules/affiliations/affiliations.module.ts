@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
 import { AffiliationsController } from './affiliations.controller';
 import { AffiliationsService } from './affiliations.service';
-import { PrismaService } from '../../common/services/prisma.service';
 
 @Module({
   controllers: [AffiliationsController],
-  providers: [AffiliationsService, PrismaService],
+  providers: [AffiliationsService],
   exports: [AffiliationsService],
 })
 export class AffiliationsModule {}

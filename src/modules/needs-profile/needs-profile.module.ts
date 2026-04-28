@@ -4,11 +4,10 @@ import {
   RecommendationsController,
 } from './needs-profile.controller';
 import { NeedsProfileService } from './needs-profile.service';
-import { PrismaService } from '../../common/services/prisma.service';
 
 @Module({
   controllers: [NeedsProfileAuthController, RecommendationsController],
-  providers: [NeedsProfileService, PrismaService],
+  providers: [NeedsProfileService],
   exports: [NeedsProfileService],
 })
 export class NeedsProfileModule {}

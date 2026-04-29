@@ -656,7 +656,7 @@ async function main() {
         description: 'East Africa\'s premier technical recruiting firm. We connect top talent with high-growth companies across Kenya, Uganda, and Tanzania.',
         website: 'https://kakairecruiting.co.ke', size: 'SMALL',
         location: 'Nairobi, Kenya', isVerified: true,
-        logoUrl: 'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=200&h=200&fit=crop',
+        logoUrl: 'https://logo.clearbit.com/kakairecruiting.co.ke',
       },
     }),
     prisma.company.create({
@@ -665,7 +665,7 @@ async function main() {
         description: 'Kenya\'s leading mobile network operator and technology company. Home of M-PESA — Africa\'s largest mobile money service.',
         website: 'https://safaricom.co.ke', size: 'ENTERPRISE',
         location: 'Nairobi, Kenya', isVerified: true,
-        logoUrl: 'https://images.unsplash.com/photo-1563986768494-4dee2763ff3f?w=200&h=200&fit=crop',
+        logoUrl: 'https://logo.clearbit.com/safaricom.co.ke',
       },
     }),
     prisma.company.create({
@@ -674,7 +674,7 @@ async function main() {
         description: 'The largest commercial bank in Kenya and one of the largest in East Africa. Operating in 7 countries with 500+ branches.',
         website: 'https://kcbgroup.com', size: 'LARGE',
         location: 'Nairobi, Kenya', isVerified: true,
-        logoUrl: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=200&h=200&fit=crop',
+        logoUrl: 'https://logo.clearbit.com/kcbgroup.com',
       },
     }),
     prisma.company.create({
@@ -683,7 +683,7 @@ async function main() {
         description: 'Global talent network that connects companies with vetted software engineers from Africa. 3,000+ engineers across 100+ countries.',
         website: 'https://andela.com', size: 'LARGE',
         location: 'Nairobi, Kenya', isVerified: true,
-        logoUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=200&h=200&fit=crop',
+        logoUrl: 'https://logo.clearbit.com/andela.com',
       },
     }),
     prisma.company.create({
@@ -692,7 +692,7 @@ async function main() {
         description: 'Africa\'s leading B2B food distribution platform. Using technology to connect farmers with food businesses, reducing waste and improving incomes.',
         website: 'https://twigafoods.com', size: 'MEDIUM',
         location: 'Nairobi, Kenya', isVerified: true,
-        logoUrl: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=200&h=200&fit=crop',
+        logoUrl: 'https://logo.clearbit.com/twigafoods.com',
       },
     }),
   ]);
@@ -1430,21 +1430,21 @@ async function main() {
 
   // 15 companies — upsert by name (will reuse Safaricom/KCB/Andela/Twiga from above)
   const extraCompaniesData = [
-    { name: 'Safaricom PLC', industry: 'Telecommunications', size: 'LARGE' as const, location: 'Westlands, Nairobi', logo: 'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=100&h=100&fit=crop', website: 'https://safaricom.co.ke', verified: true },
-    { name: 'Equity Bank Kenya', industry: 'Banking & Finance', size: 'LARGE' as const, location: 'Upper Hill, Nairobi', logo: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=100&h=100&fit=crop', website: 'https://equitybank.co.ke', verified: true },
-    { name: 'Andela Kenya', industry: 'Technology', size: 'MEDIUM' as const, location: 'Kilimani, Nairobi', logo: 'https://images.unsplash.com/photo-1560472355-536de3962603?w=100&h=100&fit=crop', website: 'https://andela.com', verified: true },
-    { name: 'M-KOPA Solar', industry: 'Clean Energy', size: 'MEDIUM' as const, location: 'Karen, Nairobi', logo: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=100&h=100&fit=crop', website: 'https://m-kopa.com', verified: true },
-    { name: 'Twiga Foods', industry: 'Agritech', size: 'MEDIUM' as const, location: 'Industrial Area, Nairobi', logo: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=100&h=100&fit=crop', website: 'https://twiga.com', verified: true },
-    { name: 'NCBA Group', industry: 'Banking & Finance', size: 'LARGE' as const, location: 'Upperhill, Nairobi', logo: 'https://images.unsplash.com/photo-1501167786227-4cba60f6d58f?w=100&h=100&fit=crop', website: 'https://ncbagroup.com', verified: true },
-    { name: 'Sendy Ltd', industry: 'Logistics & Delivery', size: 'SMALL' as const, location: 'Ngong Road, Nairobi', logo: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=100&h=100&fit=crop', website: 'https://sendy.co.ke', verified: false },
+    { name: 'Safaricom PLC', industry: 'Telecommunications', size: 'LARGE' as const, location: 'Westlands, Nairobi', logo: 'https://logo.clearbit.com/safaricom.co.ke', website: 'https://safaricom.co.ke', verified: true },
+    { name: 'Equity Bank Kenya', industry: 'Banking & Finance', size: 'LARGE' as const, location: 'Upper Hill, Nairobi', logo: 'https://logo.clearbit.com/equitybank.co.ke', website: 'https://equitybank.co.ke', verified: true },
+    { name: 'Andela Kenya', industry: 'Technology', size: 'MEDIUM' as const, location: 'Kilimani, Nairobi', logo: 'https://logo.clearbit.com/andela.com', website: 'https://andela.com', verified: true },
+    { name: 'M-KOPA Solar', industry: 'Clean Energy', size: 'MEDIUM' as const, location: 'Karen, Nairobi', logo: 'https://logo.clearbit.com/m-kopa.com', website: 'https://m-kopa.com', verified: true },
+    { name: 'Twiga Foods', industry: 'Agritech', size: 'MEDIUM' as const, location: 'Industrial Area, Nairobi', logo: 'https://logo.clearbit.com/twigafoods.com', website: 'https://twiga.com', verified: true },
+    { name: 'NCBA Group', industry: 'Banking & Finance', size: 'LARGE' as const, location: 'Upperhill, Nairobi', logo: 'https://logo.clearbit.com/ncbagroup.com', website: 'https://ncbagroup.com', verified: true },
+    { name: 'Sendy Ltd', industry: 'Logistics & Delivery', size: 'SMALL' as const, location: 'Ngong Road, Nairobi', logo: 'https://logo.clearbit.com/sendy.co.ke', website: 'https://sendy.co.ke', verified: false },
     { name: "Africa's Talking", industry: 'Technology', size: 'MEDIUM' as const, location: 'Westlands, Nairobi', logo: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=100&h=100&fit=crop', website: 'https://africastalking.com', verified: true },
-    { name: 'Deloitte East Africa', industry: 'Professional Services', size: 'LARGE' as const, location: 'Waiyaki Way, Nairobi', logo: 'https://images.unsplash.com/photo-1554469384-e58fac16e23a?w=100&h=100&fit=crop', website: 'https://deloitte.com/ke', verified: true },
-    { name: 'Nation Media Group', industry: 'Media & Publishing', size: 'LARGE' as const, location: 'Nation Centre, Nairobi', logo: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=100&h=100&fit=crop', website: 'https://nation.africa', verified: true },
-    { name: 'Sanergy', industry: 'Sanitation & Impact', size: 'SMALL' as const, location: 'Mukuru, Nairobi', logo: 'https://images.unsplash.com/photo-1532601224476-15c79f2f7a51?w=100&h=100&fit=crop', website: 'https://sanergy.com', verified: false },
-    { name: 'Jumia Kenya', industry: 'E-Commerce', size: 'MEDIUM' as const, location: 'Parklands, Nairobi', logo: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=100&h=100&fit=crop', website: 'https://jumia.co.ke', verified: true },
-    { name: 'KCB Group', industry: 'Banking & Finance', size: 'LARGE' as const, location: 'Kencom House, Nairobi', logo: 'https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?w=100&h=100&fit=crop', website: 'https://kcbgroup.com', verified: true },
-    { name: 'Cellulant', industry: 'Fintech', size: 'MEDIUM' as const, location: 'Kilimani, Nairobi', logo: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=100&h=100&fit=crop', website: 'https://cellulant.io', verified: true },
-    { name: 'Watu Credit', industry: 'Fintech', size: 'SMALL' as const, location: 'Mombasa Road, Nairobi', logo: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=100&h=100&fit=crop', website: 'https://watucredit.com', verified: false },
+    { name: 'Deloitte East Africa', industry: 'Professional Services', size: 'LARGE' as const, location: 'Waiyaki Way, Nairobi', logo: 'https://logo.clearbit.com/deloitte.com', website: 'https://deloitte.com/ke', verified: true },
+    { name: 'Nation Media Group', industry: 'Media & Publishing', size: 'LARGE' as const, location: 'Nation Centre, Nairobi', logo: 'https://logo.clearbit.com/nation.africa', website: 'https://nation.africa', verified: true },
+    { name: 'Sanergy', industry: 'Sanitation & Impact', size: 'SMALL' as const, location: 'Mukuru, Nairobi', logo: 'https://logo.clearbit.com/sanergy.com', website: 'https://sanergy.com', verified: false },
+    { name: 'Jumia Kenya', industry: 'E-Commerce', size: 'MEDIUM' as const, location: 'Parklands, Nairobi', logo: 'https://logo.clearbit.com/jumia.co.ke', website: 'https://jumia.co.ke', verified: true },
+    { name: 'KCB Group', industry: 'Banking & Finance', size: 'LARGE' as const, location: 'Kencom House, Nairobi', logo: 'https://logo.clearbit.com/kcbgroup.com', website: 'https://kcbgroup.com', verified: true },
+    { name: 'Cellulant', industry: 'Fintech', size: 'MEDIUM' as const, location: 'Kilimani, Nairobi', logo: 'https://logo.clearbit.com/cellulant.io', website: 'https://cellulant.io', verified: true },
+    { name: 'Watu Credit', industry: 'Fintech', size: 'SMALL' as const, location: 'Mombasa Road, Nairobi', logo: 'https://logo.clearbit.com/watucredit.com', website: 'https://watucredit.com', verified: false },
   ];
 
   const extraCompanies: any[] = [];
@@ -1630,6 +1630,150 @@ async function main() {
   }
 
   console.log(`Extra Uteo data: ${extraCompanies.length} companies referenced, ${extraJobCount} additional jobs, ${extraAppCount} additional applications`);
+
+  // ── BONUS COMPANIES + 35 MORE JOBS — for a really full marketplace ────
+  console.log('\nSeeding bonus marketplace data…');
+
+  const bonusCompaniesData = [
+    { name: 'iHub', industry: 'Technology', size: 'SMALL' as const, location: 'Kilimani, Nairobi', website: 'https://ihub.co.ke', verified: true, desc: "Africa's leading innovation hub and tech community space." },
+    { name: 'Eneza Education', industry: 'Edtech', size: 'SMALL' as const, location: 'Nairobi', website: 'https://enezaeducation.com', verified: true, desc: 'Mobile-based learning platform serving 6 million African students.' },
+    { name: 'Sokowatch', industry: 'B2B Commerce', size: 'MEDIUM' as const, location: 'Industrial Area, Nairobi', website: 'https://sokowatch.com', verified: true, desc: 'B2B e-commerce platform for African informal retailers.' },
+    { name: 'Kobo360', industry: 'Logistics', size: 'MEDIUM' as const, location: 'Nairobi', website: 'https://kobo360.com', verified: true, desc: 'Pan-African logistics platform connecting cargo owners with truckers.' },
+    { name: 'Branch International', industry: 'Fintech', size: 'MEDIUM' as const, location: 'Westlands, Nairobi', website: 'https://branch.co', verified: true, desc: 'Mobile-first lending and savings, serving millions across Africa.' },
+    { name: 'Tala Kenya', industry: 'Fintech', size: 'MEDIUM' as const, location: 'Westlands, Nairobi', website: 'https://tala.co.ke', verified: true, desc: 'Digital lender providing microloans to over 5 million Kenyans.' },
+    { name: 'iProcure', industry: 'Agritech', size: 'SMALL' as const, location: 'Industrial Area, Nairobi', website: 'https://iprocu.re', verified: true, desc: 'Agricultural inputs supply chain platform serving 350k+ farmers.' },
+    { name: 'Apollo Agriculture', industry: 'Agritech', size: 'MEDIUM' as const, location: 'Nairobi', website: 'https://apolloagriculture.com', verified: true, desc: 'AI-powered platform helping smallholder farmers increase yields.' },
+    { name: 'BasiGo', industry: 'Clean Mobility', size: 'SMALL' as const, location: 'Industrial Area, Nairobi', website: 'https://basigo.ke', verified: true, desc: 'Electric bus fleet operator transforming public transport in Kenya.' },
+    { name: 'Wasoko', industry: 'B2B Commerce', size: 'MEDIUM' as const, location: 'Westlands, Nairobi', website: 'https://wasoko.com', verified: true, desc: 'Africa-focused B2B e-commerce platform.' },
+  ];
+
+  const bonusCompanies: any[] = [];
+  for (const c of bonusCompaniesData) {
+    const existing = await prisma.company.findFirst({ where: { name: c.name } });
+    if (existing) { bonusCompanies.push(existing); continue; }
+    const created = await prisma.company.create({
+      data: {
+        name: c.name, industry: c.industry, size: c.size, location: c.location,
+        logoUrl: `https://logo.clearbit.com/${c.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}`,
+        website: c.website, isVerified: c.verified, description: c.desc,
+      },
+    });
+    bonusCompanies.push(created);
+  }
+
+  const bonusRecruiterDefs = [
+    { first: 'Naomi', last: 'Wachira', email: 'naomi.wachira@uteo-demo.ke' },
+    { first: 'David', last: 'Mwendia', email: 'david.mwendia@uteo-demo.ke' },
+    { first: 'Sharon', last: 'Atieno', email: 'sharon.atieno@uteo-demo.ke' },
+    { first: 'Charles', last: 'Maina', email: 'charles.maina@uteo-demo.ke' },
+    { first: 'Lucy', last: 'Wambui', email: 'lucy.wambui@uteo-demo.ke' },
+    { first: 'Tony', last: 'Kiarie', email: 'tony.kiarie@uteo-demo.ke' },
+    { first: 'Mercy', last: 'Njeri', email: 'mercy.njeri@uteo-demo.ke' },
+    { first: 'Steve', last: 'Mutuku', email: 'steve.mutuku@uteo-demo.ke' },
+    { first: 'Anita', last: 'Wanjala', email: 'anita.wanjala@uteo-demo.ke' },
+    { first: 'Gilbert', last: 'Otieno', email: 'gilbert.otieno@uteo-demo.ke' },
+  ];
+
+  const bonusRecruiters: any[] = [];
+  for (let i = 0; i < bonusRecruiterDefs.length; i++) {
+    const r = bonusRecruiterDefs[i];
+    let user = await prisma.user.findUnique({ where: { email: r.email } });
+    if (!user) {
+      user = await prisma.user.create({
+        data: { email: r.email, passwordHash: recruiterPw, firstName: r.first, lastName: r.last, role: 'TRAINER', emailVerified: true },
+      });
+    }
+    const existingRec = await prisma.recruiter.findFirst({ where: { userId: user.id } });
+    if (!existingRec) {
+      await prisma.recruiter.create({ data: { userId: user.id, companyId: bonusCompanies[i].id, title: 'Senior Talent Lead' } });
+    }
+    bonusRecruiters.push(user);
+  }
+
+  type BonusJob = { ci: number; title: string; jt: 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'INTERNSHIP' | 'REMOTE' | 'HYBRID'; loc: string; min: number; max: number; days: number; desc: string; req: string; skills: string[] };
+
+  const bonusJobs: BonusJob[] = [
+    { ci: 0, title: 'Community Manager', jt: 'FULL_TIME', loc: 'Kilimani, Nairobi', min: 80000, max: 130000, days: 2, desc: "Run iHub's developer events, hackathons and community programmes. Be the face of Kenya's tech scene to startups, sponsors and visitors. Light marketing, heavy people work.", req: '3+ years community or events. Strong network in Kenya tech. Comfortable on stage and in DMs.', skills: ['Events Management', 'Communication', 'Social Media', 'Project Management'] },
+    { ci: 0, title: 'Frontend Engineer (React)', jt: 'HYBRID', loc: 'Kilimani, Nairobi', min: 150000, max: 230000, days: 5, desc: 'Build the iHub member portal, event platform and partner dashboards. Modern stack: Next.js, TypeScript, Tailwind. Ship weekly.', req: '3+ years React. Strong TypeScript. Knows accessibility and performance.', skills: ['React', 'TypeScript', 'JavaScript', 'Figma', 'Git'] },
+    { ci: 1, title: 'Curriculum Lead', jt: 'FULL_TIME', loc: 'Nairobi', min: 110000, max: 160000, days: 4, desc: 'Own the K-12 curriculum across 6 African countries. Work with subject experts, ministry partners and our content team to keep lessons relevant and effective.', req: '5+ years curriculum design. Teaching background. KICD or similar experience a plus.', skills: ['Training & Development', 'Research', 'Project Management', 'Communication'] },
+    { ci: 1, title: 'Mobile Engineer (Kotlin/Flutter)', jt: 'REMOTE', loc: 'Remote (East Africa)', min: 200000, max: 320000, days: 7, desc: 'Build the Eneza app used by 6 million students across Africa. Offline-first design, low-bandwidth optimisation, dozens of African languages.', req: '4+ years mobile (Kotlin or Flutter). Experience with offline sync. Bonus: low-bandwidth optimisation experience.', skills: ['Kotlin', 'Flutter', 'REST APIs', 'SQL', 'Git'] },
+    { ci: 1, title: 'Growth Lead', jt: 'FULL_TIME', loc: 'Nairobi', min: 180000, max: 280000, days: 9, desc: "Drive student acquisition across Kenya, Ghana, Cote d'Ivoire. Mix of paid acquisition, school partnerships and SMS-based marketing.", req: '5+ years growth/marketing in consumer tech. Comfortable with data. Proven scale-ups.', skills: ['Digital Marketing', 'Data Analysis', 'SEO', 'Business Development'] },
+    { ci: 2, title: 'Field Operations Manager', jt: 'FULL_TIME', loc: 'Mombasa', min: 130000, max: 200000, days: 3, desc: "Lead Sokowatch's field team in Mombasa coast region. Recruit, train and supervise sales reps serving 1,500+ informal retailers. Hit weekly GMV targets.", req: '4+ years field ops or FMCG sales management. Comfortable with Excel and route optimisation.', skills: ['Operations', 'Leadership', 'Sales', 'Data Analysis', 'Logistics'] },
+    { ci: 2, title: 'Backend Engineer', jt: 'HYBRID', loc: 'Industrial Area, Nairobi', min: 220000, max: 350000, days: 8, desc: 'Engineer the Sokowatch order, inventory and routing systems. Stack: Node.js, PostgreSQL, AWS. Handle 50k+ orders per day.', req: '4+ years backend. Strong system design. Experience with high-throughput systems.', skills: ['Node.js', 'PostgreSQL', 'AWS', 'Docker', 'REST APIs'] },
+    { ci: 3, title: 'Truck Onboarding Manager', jt: 'FULL_TIME', loc: 'Mombasa Road, Nairobi', min: 100000, max: 160000, days: 2, desc: 'Recruit and onboard truckers onto the Kobo360 platform. Manage relationships with truck owners and ensure compliance with KRA, NTSA and insurance requirements.', req: '3+ years logistics or fleet management. Strong network of trucking operators. KRA/NTSA compliance familiarity.', skills: ['Logistics', 'Operations', 'CRM', 'Communication'] },
+    { ci: 3, title: 'Data Engineer', jt: 'REMOTE', loc: 'Remote (Africa)', min: 250000, max: 400000, days: 10, desc: 'Build the data infrastructure that powers Kobo360: pricing models, route optimisation, fraud detection. Work directly with the data science team.', req: '4+ years data engineering. Strong Python and SQL. Experience with Airflow, Kafka, dbt.', skills: ['Python', 'SQL', 'PostgreSQL', 'AWS', 'Data Analysis'] },
+    { ci: 4, title: 'Credit Risk Analyst', jt: 'FULL_TIME', loc: 'Westlands, Nairobi', min: 150000, max: 230000, days: 4, desc: 'Help Branch make better lending decisions across Kenya, Tanzania, Nigeria and Mexico. Build risk models that balance default rate against approval rate.', req: 'Quantitative degree (Stats, Maths, Econ). 3+ years risk or analytics. Strong Python or R.', skills: ['Python', 'Data Analysis', 'SQL', 'Financial Modelling', 'Machine Learning'] },
+    { ci: 4, title: 'Product Designer', jt: 'HYBRID', loc: 'Westlands, Nairobi', min: 180000, max: 280000, days: 6, desc: 'Design how Africans experience financial services on Branch. Lead end-to-end design for new products, from research through to ship.', req: '4+ years product design. Strong portfolio of mobile work. Experience with research and quantitative testing.', skills: ['Figma', 'UI/UX Design', 'Research', 'Product Management'] },
+    { ci: 5, title: 'Customer Success Manager', jt: 'FULL_TIME', loc: 'Westlands, Nairobi', min: 90000, max: 140000, days: 1, desc: "Manage relationships with Tala's top 1% of borrowers: high-volume, high-trust customers who get our best rates and most attention. Reduce churn, grow lifetime value.", req: '2+ years customer success or account management. Numbers-driven. Strong communication.', skills: ['Customer Success', 'Account Management', 'CRM', 'Data Analysis'] },
+    { ci: 5, title: 'Senior Backend Engineer', jt: 'REMOTE', loc: 'Remote (Africa)', min: 280000, max: 450000, days: 11, desc: "Build the systems that power Tala's lending across 4 markets. Work on credit scoring infrastructure, KYC pipelines, payment integrations.", req: '5+ years backend. Strong Python or Go. Experience with financial services or high-compliance environments.', skills: ['Python', 'PostgreSQL', 'AWS', 'Docker', 'REST APIs'] },
+    { ci: 6, title: 'Agronomist', jt: 'FULL_TIME', loc: 'Eldoret, Kenya', min: 75000, max: 120000, days: 3, desc: 'Train smallholder farmers on best practices for inputs application. Field-based role across the western Kenya region. Build trust with farmer cooperatives.', req: 'Diploma or degree in Agriculture. 3+ years field experience with smallholders. Fluent in Swahili.', skills: ['Training & Development', 'Customer Service', 'Swahili', 'Communication'] },
+    { ci: 6, title: 'Senior Software Engineer (Full-Stack)', jt: 'HYBRID', loc: 'Industrial Area, Nairobi', min: 220000, max: 340000, days: 9, desc: 'Build the iProcure platform. Frontend in React, backend in Node.js, mobile in Flutter. Real impact: every line of code affects farmer livelihoods.', req: '4+ years full-stack. Strong React and Node.js. Mobile experience a plus.', skills: ['React', 'Node.js', 'TypeScript', 'PostgreSQL', 'Flutter'] },
+    { ci: 7, title: 'Field Sales Lead', jt: 'FULL_TIME', loc: 'Kakamega, Kenya', min: 80000, max: 130000, days: 5, desc: 'Lead a team of 15 field agents across western Kenya, helping smallholder maize farmers access credit, inputs and training to double their yields.', req: '4+ years sales management in agritech or microfinance. Local language fluency. Driving licence.', skills: ['Sales', 'Leadership', 'Operations', 'Swahili', 'Communication'] },
+    { ci: 7, title: 'Machine Learning Engineer', jt: 'REMOTE', loc: 'Remote (Kenya)', min: 250000, max: 400000, days: 7, desc: 'Build ML models that predict farm yields, optimal input mixes and credit risk for Kenyan smallholder farmers. Work with satellite imagery, weather data and on-farm surveys.', req: '4+ years ML engineering. Strong Python. Experience with geospatial data a major plus.', skills: ['Python', 'Machine Learning', 'Data Analysis', 'SQL', 'AWS'] },
+    { ci: 8, title: 'Fleet Operations Manager', jt: 'FULL_TIME', loc: 'Industrial Area, Nairobi', min: 200000, max: 310000, days: 4, desc: "Run BasiGo's electric bus fleet operations: maintenance, charging schedules, route optimisation. Work with PSV operators to maximise vehicle uptime.", req: '5+ years fleet or transport operations. EV experience a plus. Strong analytical mindset.', skills: ['Operations', 'Leadership', 'Logistics', 'Data Analysis'] },
+    { ci: 8, title: 'Embedded Software Engineer', jt: 'FULL_TIME', loc: 'Industrial Area, Nairobi', min: 200000, max: 320000, days: 12, desc: 'Build the telematics and fleet management software that runs on every BasiGo bus. Real-time vehicle data, charge state, route compliance.', req: '4+ years embedded or IoT engineering. C/C++ and Python. Linux and CAN bus experience.', skills: ['Python', 'AWS', 'Docker', 'PostgreSQL', 'REST APIs'] },
+    { ci: 9, title: 'Country Manager (Tanzania)', jt: 'FULL_TIME', loc: 'Dar es Salaam', min: 380000, max: 600000, days: 6, desc: "Lead Wasoko's Tanzania operation. Full P&L responsibility. Build local teams in sales, ops, finance. Set the strategy for one of our key growth markets.", req: '8+ years GM or country lead experience. Strong African market track record. MBA preferred.', skills: ['Leadership', 'Business Development', 'Operations', 'Financial Modelling', 'Communication'] },
+    { ci: 9, title: 'Senior Product Manager', jt: 'HYBRID', loc: 'Westlands, Nairobi', min: 280000, max: 450000, days: 8, desc: 'Own the Wasoko retailer ordering experience across 5 markets. Drive ordering frequency, basket size and retention through better product.', req: '5+ years PM. Consumer or B2B marketplace experience. Strong analytical chops.', skills: ['Product Management', 'Data Analysis', 'Agile', 'Communication', 'Research'] },
+    { ci: 0, title: 'Investor Relations Associate', jt: 'CONTRACT', loc: 'Kilimani, Nairobi', min: 100000, max: 150000, days: 2, desc: "Support iHub's engagement with VCs, foundations and corporate partners. Prep decks, manage outreach pipelines, write quarterly updates.", req: '3+ years in IR, BD or PR. Strong writing. Comfortable in Excel and Notion.', skills: ['Business Development', 'Communication', 'Research', 'Excel', 'Content Writing'] },
+    { ci: 1, title: 'Education Researcher', jt: 'PART_TIME', loc: 'Remote (Kenya)', min: 50000, max: 80000, days: 3, desc: 'Run small qualitative studies with parents, students and teachers to validate Eneza product directions. 20 hours per week, flexible.', req: '2+ years applied research. Comfortable with thematic coding. Native English; Swahili a plus.', skills: ['Research', 'Communication', 'Swahili', 'Data Analysis'] },
+    { ci: 2, title: 'Inventory Planner', jt: 'FULL_TIME', loc: 'Industrial Area, Nairobi', min: 90000, max: 140000, days: 4, desc: 'Forecast demand and plan stock for Sokowatch warehouses across Kenya. Reduce out-of-stock and overstock through better data-driven planning.', req: '3+ years supply chain planning. Strong Excel and SQL. FMCG experience preferred.', skills: ['Supply Chain', 'Excel', 'SQL', 'Data Analysis', 'Operations'] },
+    { ci: 3, title: 'DevOps Engineer', jt: 'REMOTE', loc: 'Remote (Africa)', min: 280000, max: 440000, days: 6, desc: "Build and maintain Kobo360's cloud infrastructure across AWS and GCP. Containerised microservices, observability, cost optimisation.", req: '4+ years DevOps/SRE. Strong Kubernetes and Terraform. AWS or GCP certified preferred.', skills: ['AWS', 'Docker', 'Python', 'PostgreSQL', 'REST APIs'] },
+    { ci: 4, title: 'Compliance Officer', jt: 'FULL_TIME', loc: 'Westlands, Nairobi', min: 130000, max: 200000, days: 8, desc: "Ensure Branch's lending operations comply with CBK regulations, AML/CFT and emerging digital lending rules. Liaise directly with regulators.", req: 'Law or finance degree. 4+ years compliance in financial services. CBK familiarity required.', skills: ['Legal Research', 'Auditing', 'Excel', 'Research', 'Communication'] },
+    { ci: 5, title: 'Marketing Analyst', jt: 'FULL_TIME', loc: 'Westlands, Nairobi', min: 110000, max: 170000, days: 1, desc: "Measure the effectiveness of Tala's marketing across SMS, USSD, paid digital and partnerships. Build dashboards and run experiments.", req: '2+ years marketing analytics. Strong SQL. Familiar with attribution modelling.', skills: ['Data Analysis', 'SQL', 'Excel', 'Power BI', 'Digital Marketing'] },
+    { ci: 6, title: 'Logistics Coordinator', jt: 'FULL_TIME', loc: 'Eldoret, Kenya', min: 70000, max: 105000, days: 5, desc: 'Coordinate iProcure deliveries from regional warehouses to farmer collection points across western Kenya. Manage drivers, fuel cards, route plans.', req: '2+ years logistics or fleet coordination. Comfortable with GIS tools. Driving licence.', skills: ['Logistics', 'Operations', 'Excel', 'Communication'] },
+    { ci: 7, title: 'Customer Onboarding Specialist', jt: 'FULL_TIME', loc: 'Kakamega, Kenya', min: 50000, max: 80000, days: 2, desc: 'Onboard new smallholder farmers onto Apollo Agriculture programmes. Field-based, lots of farmer education, trust-building.', req: '1+ year customer-facing field role. Local language fluency. Strong patience and empathy.', skills: ['Customer Service', 'Training & Development', 'Swahili', 'Communication'] },
+    { ci: 8, title: 'Charging Infrastructure Manager', jt: 'FULL_TIME', loc: 'Industrial Area, Nairobi', min: 180000, max: 280000, days: 3, desc: "Plan, deploy and maintain BasiGo's electric bus charging network across Nairobi. Work with KPLC, landlords and our engineering team.", req: '5+ years infrastructure or electrical engineering. EV charging experience strongly preferred.', skills: ['Electrical Engineering', 'Project Management', 'Operations', 'Communication'] },
+    { ci: 9, title: 'Finance Business Partner', jt: 'FULL_TIME', loc: 'Westlands, Nairobi', min: 220000, max: 340000, days: 9, desc: "Partner with Wasoko's sales and ops leadership to plan budgets, track unit economics and run weekly business reviews. CFO's right hand.", req: 'CPA(K) or ACCA. 5+ years FP&A. Experience in fast-moving consumer or commerce companies.', skills: ['Financial Modelling', 'Excel', 'Accounting', 'Data Analysis', 'Auditing'] },
+    { ci: 0, title: 'Junior Frontend Engineer', jt: 'INTERNSHIP', loc: 'Kilimani, Nairobi', min: 35000, max: 55000, days: 0, desc: 'Join iHub as a paid intern. Work on the member portal alongside our senior engineers. Real code that ships.', req: 'Final year CS or self-taught with portfolio. Basic React. Eager to learn.', skills: ['JavaScript', 'React', 'Git', 'Communication'] },
+    { ci: 1, title: 'Customer Support Lead', jt: 'FULL_TIME', loc: 'Nairobi', min: 100000, max: 150000, days: 4, desc: "Build and lead Eneza's customer support operation. SMS, WhatsApp and call centre channels. Coach a team of 8.", req: '4+ years customer support. Team lead experience. Familiar with Zendesk and HubSpot.', skills: ['Customer Service', 'Customer Success', 'Leadership', 'CRM', 'Communication'] },
+    { ci: 4, title: 'Mobile App Engineer (Android)', jt: 'HYBRID', loc: 'Westlands, Nairobi', min: 200000, max: 310000, days: 7, desc: 'Build the Branch Android app used by millions across Kenya, Tanzania, Nigeria and Mexico. Strong focus on performance and offline experience.', req: '4+ years Android. Kotlin and Jetpack Compose. Performance optimisation experience.', skills: ['Kotlin', 'Java', 'REST APIs', 'SQL', 'Git'] },
+  ];
+
+  let bonusJobCount = 0;
+  for (const j of bonusJobs) {
+    const recruiter = bonusRecruiters[j.ci];
+    const company = bonusCompanies[j.ci];
+    if (!recruiter || !company) continue;
+    const job = await prisma.job.create({
+      data: {
+        companyId: company.id, postedById: recruiter.id,
+        title: j.title, description: j.desc, requirements: j.req,
+        location: j.loc, jobType: j.jt as any,
+        salaryMin: j.min, salaryMax: j.max, currency: 'KES',
+        status: 'ACTIVE', expiresAt: daysFrom(30), createdAt: daysAgo(j.days),
+      },
+    });
+    const validSkills = j.skills.filter(s => extraSkillMap[s]);
+    if (validSkills.length) {
+      await prisma.jobSkill.createMany({
+        data: validSkills.map(s => ({ jobId: job.id, skillId: extraSkillMap[s] })),
+        skipDuplicates: true,
+      });
+    }
+    bonusJobCount++;
+  }
+
+  const allActiveJobs2 = await prisma.job.findMany({ where: { status: 'ACTIVE' }, select: { id: true, title: true } });
+  const allDemoSeekers2 = await prisma.user.findMany({ where: { email: { in: seekerEmails } }, select: { id: true } });
+  let bonusAppCount = 0;
+  for (const seeker of allDemoSeekers2) {
+    const more = rndInt(5, 10);
+    const shuffled = [...allActiveJobs2].sort(() => Math.random() - 0.5).slice(0, more);
+    for (const job of shuffled) {
+      try {
+        await prisma.application.create({
+          data: {
+            userId: seeker.id, jobId: job.id, status: rnd(appStatuses),
+            coverLetter: `I'd love the chance to interview for the ${job.title} role.`,
+            appliedAt: daysAgo(rndInt(1, 30)),
+          },
+        });
+        bonusAppCount++;
+      } catch { /* dup, skip */ }
+    }
+  }
+
+  console.log(`Bonus marketplace data: ${bonusCompanies.length} more companies, ${bonusJobCount} more jobs, ${bonusAppCount} more applications`);
 
   // ── Summary ───────────────────────────────────────────────────────────────
   console.log('\nUteo seed complete!\n');

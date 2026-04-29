@@ -1,4 +1,6 @@
 import { Controller, Get, Post, Patch, Delete, Put, Param, Body, Query, UseGuards } from '@nestjs/common';
+import { spawn } from 'child_process';
+import * as path from 'path';
 import { AdminService } from './admin.service';
 import { PrismaService } from '../../common/services/prisma.service';
 import { ListAuditLogsDto, VerifyTrainerDto, AnalyticsQueryDto } from './dto/admin.dto';
@@ -18,6 +20,43 @@ export class AdminController {
   @Get('analytics') getAnalytics(@Query() dto: AnalyticsQueryDto) { return this.svc.getAnalytics(dto); }
   @Get('audit-logs') getAuditLogs(@Query() dto: ListAuditLogsDto) { return this.svc.getAuditLogs(dto); }
   @Post('verify-trainer/:id') verifyTrainer(@Param('id') id: string, @Body() dto: VerifyTrainerDto, @CurrentUser('id') aid: string) { return this.svc.verifyTrainer(id, dto, aid); }
+
+  // ── Manual seed trigger (SUPER_ADMIN only) ─────────────────────────────
+  // Spawns the compiled seed script. Returns immediately; logs go to stdout.
+  @Post('seed') @Roles('SUPER_ADMIN')
+  async runSeed(@CurrentUser('id') uid: string) {
+    const seedPath = path.resolve(process.cwd(), 'dist/seed/seed.js');
+    const child = spawn('node', [seedPath], { detached: true, stdio: 'ignore', env: process.env });
+    child.unref();
+
+    const before = {
+      companies: await this.prisma.company.count(),
+      jobs: await this.prisma.job.count(),
+      applications: await this.prisma.application.count(),
+      users: await this.prisma.user.count(),
+    };
+    return {
+      message: 'Seed started in background. Check /admin/seed/status in 30-90 seconds.',
+      pid: child.pid,
+      seedPath,
+      countsBefore: before,
+      triggeredBy: uid,
+      triggeredAt: new Date().toISOString(),
+    };
+  }
+
+  @Get('seed/status')
+  async seedStatus() {
+    const [companies, jobs, applications, users, recruiters, skills] = await Promise.all([
+      this.prisma.company.count(),
+      this.prisma.job.count(),
+      this.prisma.application.count(),
+      this.prisma.user.count(),
+      this.prisma.recruiter.count(),
+      this.prisma.skill.count(),
+    ]);
+    return { companies, jobs, applications, users, recruiters, skills };
+  }
 
   // AI Control — ranking weights (persisted in SystemSetting)
   @Get('ai/ranking-weights')

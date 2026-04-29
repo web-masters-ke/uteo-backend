@@ -646,6 +646,10 @@ async function main() {
     clientUsers.push(u);
   }
 
+  // ── MARKETPLACE BLOCK (companies, jobs, applications, etc.) ────────────
+  // Wrapped in try/catch so a single failure doesn't kill the whole seed.
+  try {
+
   // ── Companies + Recruiter links ───────────────────────────────────────────
   const [
     companyKakai, companySafaricom, companyKCB, companyAndela, companyTwiga,
@@ -1774,6 +1778,11 @@ async function main() {
   }
 
   console.log(`Bonus marketplace data: ${bonusCompanies.length} more companies, ${bonusJobCount} more jobs, ${bonusAppCount} more applications`);
+
+  } catch (err) {
+    console.error('\n⚠️  Marketplace seed block failed:', err instanceof Error ? err.message : err);
+    console.error('Earlier sections (skills, categories, users) succeeded. The rest will be retried on next run.');
+  }
 
   // ── Summary ───────────────────────────────────────────────────────────────
   console.log('\nUteo seed complete!\n');

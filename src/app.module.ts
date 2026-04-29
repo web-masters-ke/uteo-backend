@@ -51,6 +51,7 @@ import { SlaModule } from './modules/sla/sla.module';
 import { CompaniesModule } from './modules/companies/companies.module';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { ApplicationsModule } from './modules/applications/applications.module';
+import { TasksModule } from './modules/tasks/tasks.module';
 import { FeedModule } from './modules/feed/feed.module';
 import { ProfileModule } from './modules/profile/profile.module';
 import { AiModule } from './modules/ai/ai.module';
@@ -101,6 +102,7 @@ import { AiModule } from './modules/ai/ai.module';
     CompaniesModule,
     JobsModule,
     ApplicationsModule,
+    TasksModule,
     FeedModule,
     ProfileModule,
     AiModule,

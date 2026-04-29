@@ -10,6 +10,7 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../common/services/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { BrevoService } from '../../common/services/brevo.service';
+import { TasksService } from '../tasks/tasks.service';
 import { pageParams, paginate } from '../../common/dto/pagination.dto';
 import {
   CreateApplicationDto,
@@ -24,6 +25,7 @@ export class ApplicationsService {
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
     private readonly brevo: BrevoService,
+    private readonly tasks: TasksService,
   ) {}
 
   async create(userId: string, dto: CreateApplicationDto) {
@@ -311,6 +313,11 @@ export class ApplicationsService {
         meetingLink: dto.meetingLink,
       },
     });
+
+    // Auto-create the next task in the hiring workflow
+    this.tasks
+      .onApplicationStatusChange(id, dto.status as any, userId)
+      .catch(() => null);
 
     const applicant = application.user;
     const jobTitle = application.job.title;

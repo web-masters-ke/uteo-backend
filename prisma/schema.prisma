@@ -176,26 +176,26 @@ enum TeamMemberRole {
 }
 
 enum TrainerTier {
-  CERTIFIED       // Has verified credentials/certifications
-  EXPERIENCED     // Significant experience but no formal certs
-  ENTRY_LEVEL     // New to the field, building portfolio
+  CERTIFIED // Has verified credentials/certifications
+  EXPERIENCED // Significant experience but no formal certs
+  ENTRY_LEVEL // New to the field, building portfolio
 }
 
 enum TrainerType {
-  PROFESSIONAL    // White collar: corporate training, consulting, coaching
-  VOCATIONAL      // Blue collar: trades, crafts, practical skills
-  BOTH            // Offers both types
+  PROFESSIONAL // White collar: corporate training, consulting, coaching
+  VOCATIONAL // Blue collar: trades, crafts, practical skills
+  BOTH // Offers both types
 }
 
 enum CredentialType {
-  DEGREE                  // University degree
-  DIPLOMA                 // College diploma
-  CERTIFICATE             // Short course certificate
-  LICENSE                 // Professional license (e.g. CPA, PMP)
+  DEGREE // University degree
+  DIPLOMA // College diploma
+  CERTIFICATE // Short course certificate
+  LICENSE // Professional license (e.g. CPA, PMP)
   PROFESSIONAL_MEMBERSHIP // Professional body membership (e.g. ICF, IHRM)
-  TRADE_CERTIFICATE       // NITA, TVETA, or trade body certificate
-  APPRENTICESHIP          // Completed apprenticeship
-  PORTFOLIO               // Portfolio of work (for vocational trainers)
+  TRADE_CERTIFICATE // NITA, TVETA, or trade body certificate
+  APPRENTICESHIP // Completed apprenticeship
+  PORTFOLIO // Portfolio of work (for vocational trainers)
 }
 
 enum InviteStatus {
@@ -302,68 +302,68 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  trainerProfile    TrainerProfile?
-  sessions          UserSession[]
-  passwordResets    PasswordResetToken[]
-  notifications     Notification[]
-  conversations     ConversationParticipant[]
-  messages          Message[]
-  wallet            Wallet?
-  bookingsAsTrainer Booking[]       @relation("BookingTrainer")
-  bookingsAsClient  Booking[]       @relation("BookingClient")
-  reviewsGiven      Review[]        @relation("ReviewAuthor")
-  reviewsReceived   Review[]        @relation("ReviewTrainer")
-  reviewsAsTarget   Review[]        @relation("ReviewTarget")
-  payments          Payment[]
-  subscriptions     Subscription[]
-  disputesRaised    Dispute[]       @relation("DisputeRaiser")
-  disputesAgainst   Dispute[]       @relation("DisputeAgainst")
-  disputesResolved  Dispute[]       @relation("DisputeResolver")
-  disputesAssigned  Dispute[]       @relation("DisputeAssignee")
-  disputeComments   DisputeComment[] @relation("DisputeCommenter")
-  slaPoliciesCreated    SlaPolicy[]     @relation("SlaPolicyCreator")
-  slaAssignmentsCreated SlaAssignment[] @relation("SlaAssignmentCreator")
-  auditLogs         AuditLog[]
-  verificationReviews VerificationRequest[]
+  trainerProfile        TrainerProfile?
+  sessions              UserSession[]
+  passwordResets        PasswordResetToken[]
+  notifications         Notification[]
+  conversations         ConversationParticipant[]
+  messages              Message[]
+  wallet                Wallet?
+  bookingsAsTrainer     Booking[]                 @relation("BookingTrainer")
+  bookingsAsClient      Booking[]                 @relation("BookingClient")
+  reviewsGiven          Review[]                  @relation("ReviewAuthor")
+  reviewsReceived       Review[]                  @relation("ReviewTrainer")
+  reviewsAsTarget       Review[]                  @relation("ReviewTarget")
+  payments              Payment[]
+  subscriptions         Subscription[]
+  disputesRaised        Dispute[]                 @relation("DisputeRaiser")
+  disputesAgainst       Dispute[]                 @relation("DisputeAgainst")
+  disputesResolved      Dispute[]                 @relation("DisputeResolver")
+  disputesAssigned      Dispute[]                 @relation("DisputeAssignee")
+  disputeComments       DisputeComment[]          @relation("DisputeCommenter")
+  slaPoliciesCreated    SlaPolicy[]               @relation("SlaPolicyCreator")
+  slaAssignmentsCreated SlaAssignment[]           @relation("SlaAssignmentCreator")
+  auditLogs             AuditLog[]
+  verificationReviews   VerificationRequest[]
 
   // Team relations
-  firmMembers      TeamMember[]  @relation("FirmMembers")
-  teamMembership   TeamMember[]  @relation("MemberUser")
-  teamInvitedBy    TeamMember[]  @relation("InvitedByUser")
-  firmInvites      TeamInvite[]  @relation("FirmInvites")
+  firmMembers    TeamMember[] @relation("FirmMembers")
+  teamMembership TeamMember[] @relation("MemberUser")
+  teamInvitedBy  TeamMember[] @relation("InvitedByUser")
+  firmInvites    TeamInvite[] @relation("FirmInvites")
 
   // Availability slot assignment
-  assignedSlots    AvailabilitySlot[] @relation("SlotConsultant")
+  assignedSlots AvailabilitySlot[] @relation("SlotConsultant")
 
   // Department relations
-  firmDepartments  Department[] @relation("FirmDepartments")
-  ledDepartments   Department[] @relation("DepartmentLead")
+  firmDepartments Department[] @relation("FirmDepartments")
+  ledDepartments  Department[] @relation("DepartmentLead")
 
   // Favorites, Courses, Affiliations
-  favorites        Favorite[]
-  coursesCreated   Course[]        @relation("CourseInstructor")
-  enrollments      Enrollment[]
-  submissions      LessonSubmission[] @relation("UserSubmissions")
-  affiliations     InstitutionalAffiliation[]
-  reminders        ScheduledReminder[]
+  favorites      Favorite[]
+  coursesCreated Course[]                   @relation("CourseInstructor")
+  enrollments    Enrollment[]
+  submissions    LessonSubmission[]         @relation("UserSubmissions")
+  affiliations   InstitutionalAffiliation[]
+  reminders      ScheduledReminder[]
 
   // Follows
-  followers        Follow[]        @relation("UserFollowers")
-  following        Follow[]        @relation("UserFollowing")
+  followers Follow[] @relation("UserFollowers")
+  following Follow[] @relation("UserFollowing")
 
   // Financial
-  invoicesIssued   Invoice[]       @relation("InvoiceIssuer")
-  invoicesReceived Invoice[]       @relation("InvoiceRecipient")
+  invoicesIssued   Invoice[] @relation("InvoiceIssuer")
+  invoicesReceived Invoice[] @relation("InvoiceRecipient")
   payoutRequests   Payout[]
 
   // Attendance
-  attendance       AttendanceRecord[] @relation("UserAttendance")
+  attendance AttendanceRecord[] @relation("UserAttendance")
 
   // Onboarding / Recommendations
-  needsProfile     UserNeedsProfile?
+  needsProfile UserNeedsProfile?
 
   // Course certificates (issued completions)
-  certificates     CourseCertificate[] @relation("UserCertificates")
+  certificates CourseCertificate[] @relation("UserCertificates")
 
   // Directly assigned by a trainer (set when trainer adds a learner manually)
   assignedTrainerId String?
@@ -371,17 +371,21 @@ model User {
   assignedLearners  User[]  @relation("TrainerLearners")
 
   // Uteo — Recruitment Platform
-  recruiter        Recruiter[]
-  jobsPosted       Job[]            @relation("JobsPosted")
-  applications     Application[]
-  savedJobs        SavedJob[]
-  jobInteractions  JobInteraction[]
+  recruiter       Recruiter[]
+  jobsPosted      Job[]            @relation("JobsPosted")
+  applications    Application[]
+  savedJobs       SavedJob[]
+  jobInteractions JobInteraction[]
 
   // Uteo — Job Seeker Profile
   workExperience   WorkExperience[]
   education        Education[]
   jobSeekerProfile JobSeekerProfile?
   userSkills       UserSkill[]
+
+  // Hiring tasks
+  assignedTasks Task[] @relation("TaskAssignee")
+  createdTasks  Task[] @relation("TaskCreator")
 
   @@index([role])
   @@index([status])
@@ -420,38 +424,38 @@ model PasswordResetToken {
 // ---------------------------------------------------------------------------
 
 model TrainerProfile {
-  id                   String             @id @default(uuid())
-  userId               String             @unique
-  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  firmName             String?
-  bio                  String?
-  hourlyRate           Decimal            @default(0) @db.Decimal(12, 2)
-  currency             String             @default("KES")
-  rating               Decimal            @default(0) @db.Decimal(3, 2)
-  totalReviews         Int                @default(0)
-  verificationStatus   VerificationStatus @default(PENDING)
-  experience           Int                @default(0)
-  location             String?
-  city                 String?
-  county               String?
-  specialization       String?
-  categoryId           String?
-  languages            String[]           @default([])
-  tier                 TrainerTier        @default(ENTRY_LEVEL)
-  trainerType          TrainerType        @default(PROFESSIONAL)
-  availableForOnline   Boolean            @default(true)
-  availableForPhysical Boolean            @default(false)
-  availableForHybrid   Boolean            @default(false)
-  portfolioUrl         String?
-  linkedinUrl          String?
-  websiteUrl           String?
-  customCommissionRate Decimal?           @db.Decimal(5, 4) // Admin override, takes highest priority
-  commissionWaivedUntil DateTime?         // Free commission until this date
-  isHiring             Boolean            @default(true)
-  followerCount        Int                @default(0)
-  completionRate       Float              @default(0.8)
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
+  id                    String             @id @default(uuid())
+  userId                String             @unique
+  user                  User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firmName              String?
+  bio                   String?
+  hourlyRate            Decimal            @default(0) @db.Decimal(12, 2)
+  currency              String             @default("KES")
+  rating                Decimal            @default(0) @db.Decimal(3, 2)
+  totalReviews          Int                @default(0)
+  verificationStatus    VerificationStatus @default(PENDING)
+  experience            Int                @default(0)
+  location              String?
+  city                  String?
+  county                String?
+  specialization        String?
+  categoryId            String?
+  languages             String[]           @default([])
+  tier                  TrainerTier        @default(ENTRY_LEVEL)
+  trainerType           TrainerType        @default(PROFESSIONAL)
+  availableForOnline    Boolean            @default(true)
+  availableForPhysical  Boolean            @default(false)
+  availableForHybrid    Boolean            @default(false)
+  portfolioUrl          String?
+  linkedinUrl           String?
+  websiteUrl            String?
+  customCommissionRate  Decimal?           @db.Decimal(5, 4) // Admin override, takes highest priority
+  commissionWaivedUntil DateTime? // Free commission until this date
+  isHiring              Boolean            @default(true)
+  followerCount         Int                @default(0)
+  completionRate        Float              @default(0.8)
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
 
   skills               TrainerSkill[]
   certifications       Certification[]
@@ -467,14 +471,14 @@ model TrainerProfile {
 }
 
 model Skill {
-  id          String  @id @default(uuid())
-  name        String  @unique
+  id          String   @id @default(uuid())
+  name        String   @unique
   category    String?
   trainerType String? // PROFESSIONAL, VOCATIONAL, or null (both)
   description String?
   icon        String? // emoji or icon name
   level       String? // BEGINNER, INTERMEDIATE, ADVANCED, EXPERT
-  isActive    Boolean @default(true)
+  isActive    Boolean  @default(true)
   demand      String? // LOW, MEDIUM, HIGH, CRITICAL
   tags        String[] @default([])
   createdAt   DateTime @default(now())
@@ -500,21 +504,21 @@ model TrainerSkill {
 }
 
 model Certification {
-  id               String           @id @default(uuid())
+  id               String         @id @default(uuid())
   trainerId        String
-  trainer          TrainerProfile   @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  trainer          TrainerProfile @relation(fields: [trainerId], references: [id], onDelete: Cascade)
   name             String
   issuer           String?
   yearObtained     Int?
   expiryDate       DateTime?
   documentUrl      String?
-  credentialType   CredentialType   @default(CERTIFICATE)
-  verified         Boolean          @default(false)
+  credentialType   CredentialType @default(CERTIFICATE)
+  verified         Boolean        @default(false)
   verificationNote String?
   verifiedAt       DateTime?
   verifiedBy       String?
   rejectedReason   String?
-  createdAt        DateTime         @default(now())
+  createdAt        DateTime       @default(now())
 
   verificationRequests VerificationRequest[]
 
@@ -582,16 +586,16 @@ model Booking {
   meetingLink        String?
   notes              String?
   escrowId           String?
-  courseId            String?
-  lessonId            String?
-  cancellationReason    String?
-  cancelledBy           String?
-  completedAt           DateTime?
-  trainerConfirmed      Boolean   @default(false)
-  clientConfirmed       Boolean   @default(false)
-  trainerConfirmedAt    DateTime?
-  clientConfirmedAt     DateTime?
-  rescheduledFromId     String?
+  courseId           String?
+  lessonId           String?
+  cancellationReason String?
+  cancelledBy        String?
+  completedAt        DateTime?
+  trainerConfirmed   Boolean       @default(false)
+  clientConfirmed    Boolean       @default(false)
+  trainerConfirmedAt DateTime?
+  clientConfirmedAt  DateTime?
+  rescheduledFromId  String?
   rescheduledToId    String?
   rescheduledAt      DateTime?
   rescheduledBy      String?
@@ -660,7 +664,7 @@ model Category {
   name        String   @unique
   description String?
   icon        String?
-  trainerType String?  // PROFESSIONAL, VOCATIONAL, or null (both)
+  trainerType String? // PROFESSIONAL, VOCATIONAL, or null (both)
   isActive    Boolean  @default(true)
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
@@ -674,22 +678,22 @@ model Category {
 // ---------------------------------------------------------------------------
 
 model Review {
-  id                  String    @id @default(uuid())
-  bookingId           String
-  booking             Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  reviewerId          String
-  reviewer            User      @relation("ReviewAuthor", fields: [reviewerId], references: [id])
-  revieweeId          String?
-  reviewee            User?     @relation("ReviewTarget", fields: [revieweeId], references: [id])
-  trainerId           String
-  trainer             User      @relation("ReviewTrainer", fields: [trainerId], references: [id])
-  rating              Int
-  comment             String?
-  isVisible           Boolean   @default(true)
-  trainerResponse     String?
-  trainerRespondedAt  DateTime?
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  id                 String    @id @default(uuid())
+  bookingId          String
+  booking            Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  reviewerId         String
+  reviewer           User      @relation("ReviewAuthor", fields: [reviewerId], references: [id])
+  revieweeId         String?
+  reviewee           User?     @relation("ReviewTarget", fields: [revieweeId], references: [id])
+  trainerId          String
+  trainer            User      @relation("ReviewTrainer", fields: [trainerId], references: [id])
+  rating             Int
+  comment            String?
+  isVisible          Boolean   @default(true)
+  trainerResponse    String?
+  trainerRespondedAt DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   @@unique([bookingId, reviewerId])
   @@index([trainerId, createdAt])
@@ -729,22 +733,22 @@ model ConversationParticipant {
 }
 
 model Message {
-  id                  String    @id @default(uuid())
-  conversationId      String
-  conversation        Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  senderId            String
-  sender              User      @relation(fields: [senderId], references: [id], onDelete: Cascade)
-  messageType         String    @default("TEXT")
-  content             String?
-  fileUrl             String?
-  metadata            Json?
-  isRead              Boolean   @default(false)
-  createdAt           DateTime  @default(now())
-  deletedForEveryone  Boolean   @default(false)
-  deletedForSenderAt  DateTime?
-  replyToId           String?
-  replyTo             Message?  @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: SetNull)
-  replies             Message[] @relation("MessageReplies")
+  id                 String       @id @default(uuid())
+  conversationId     String
+  conversation       Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId           String
+  sender             User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  messageType        String       @default("TEXT")
+  content            String?
+  fileUrl            String?
+  metadata           Json?
+  isRead             Boolean      @default(false)
+  createdAt          DateTime     @default(now())
+  deletedForEveryone Boolean      @default(false)
+  deletedForSenderAt DateTime?
+  replyToId          String?
+  replyTo            Message?     @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies            Message[]    @relation("MessageReplies")
 
   @@index([conversationId, createdAt])
   @@index([senderId])
@@ -801,18 +805,18 @@ model LedgerEntry {
 }
 
 model EscrowAccount {
-  id             String       @id @default(uuid())
-  bookingId      String       @unique
-  booking        Booking      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  payerWalletId  String
-  payerWallet    Wallet       @relation("PayerWallet", fields: [payerWalletId], references: [id])
-  amount         Decimal      @db.Decimal(12, 2)
-  currency       String       @default("KES")
-  status         EscrowStatus @default(CREATED)
-  fundedAt       DateTime?
-  releasedAt     DateTime?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  id            String       @id @default(uuid())
+  bookingId     String       @unique
+  booking       Booking      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  payerWalletId String
+  payerWallet   Wallet       @relation("PayerWallet", fields: [payerWalletId], references: [id])
+  amount        Decimal      @db.Decimal(12, 2)
+  currency      String       @default("KES")
+  status        EscrowStatus @default(CREATED)
+  fundedAt      DateTime?
+  releasedAt    DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
   statusLogs       EscrowStatusLog[]
   commissionRecord CommissionRecord?
@@ -861,8 +865,8 @@ model CommissionRule {
   maxAmount        Decimal  @db.Decimal(12, 2)
   commissionRate   Decimal  @db.Decimal(5, 4)
   subscriptionTier String?
-  trainerType      String?  // PROFESSIONAL, VOCATIONAL, null (both)
-  orgId            String?  // if set, rule applies only to this org
+  trainerType      String? // PROFESSIONAL, VOCATIONAL, null (both)
+  orgId            String? // if set, rule applies only to this org
   isGlobal         Boolean  @default(true) // true = platform-wide
   isActive         Boolean  @default(true)
   createdAt        DateTime @default(now())
@@ -896,24 +900,24 @@ model CommissionRecord {
 // ---------------------------------------------------------------------------
 
 model SubscriptionPlan {
-  id              String   @id @default(uuid())
-  name            String   @unique
-  description     String?
-  price           Decimal  @default(0) @db.Decimal(12, 2)
-  currency        String   @default("KES")
-  durationDays    Int      @default(30)
-  billingCycle    String   @default("monthly") // monthly, quarterly, yearly, custom
-  features        Json?
-  maxBookings     Int?     // null = unlimited
-  maxTeamMembers  Int?     // null = unlimited
-  commissionRate  Decimal? @db.Decimal(5, 4) // override commission for this plan
-  trainerType     String?  // PROFESSIONAL, VOCATIONAL, null (both)
-  isActive        Boolean  @default(true)
-  isGlobal        Boolean  @default(true)  // true = available to everyone
-  orgId           String?  // if set, plan is exclusive to this org
-  sortOrder       Int      @default(0)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id             String   @id @default(uuid())
+  name           String   @unique
+  description    String?
+  price          Decimal  @default(0) @db.Decimal(12, 2)
+  currency       String   @default("KES")
+  durationDays   Int      @default(30)
+  billingCycle   String   @default("monthly") // monthly, quarterly, yearly, custom
+  features       Json?
+  maxBookings    Int? // null = unlimited
+  maxTeamMembers Int? // null = unlimited
+  commissionRate Decimal? @db.Decimal(5, 4) // override commission for this plan
+  trainerType    String? // PROFESSIONAL, VOCATIONAL, null (both)
+  isActive       Boolean  @default(true)
+  isGlobal       Boolean  @default(true) // true = available to everyone
+  orgId          String? // if set, plan is exclusive to this org
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   subscriptions Subscription[]
 
@@ -944,33 +948,33 @@ model Subscription {
 // ---------------------------------------------------------------------------
 
 model Dispute {
-  id            String        @id @default(uuid())
-  bookingId     String
-  booking       Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  raisedById    String
-  raisedBy      User          @relation("DisputeRaiser", fields: [raisedById], references: [id])
-  againstId     String
-  against       User          @relation("DisputeAgainst", fields: [againstId], references: [id])
-  reason        String
-  category      DisputeCategory @default(OTHER)
-  description   String?
-  status        DisputeStatus @default(OPEN)
-  resolution    String?
-  resolvedById  String?
-  resolvedBy    User?         @relation("DisputeResolver", fields: [resolvedById], references: [id])
-  resolvedAt    DateTime?
+  id              String          @id @default(uuid())
+  bookingId       String
+  booking         Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  raisedById      String
+  raisedBy        User            @relation("DisputeRaiser", fields: [raisedById], references: [id])
+  againstId       String
+  against         User            @relation("DisputeAgainst", fields: [againstId], references: [id])
+  reason          String
+  category        DisputeCategory @default(OTHER)
+  description     String?
+  status          DisputeStatus   @default(OPEN)
+  resolution      String?
+  resolvedById    String?
+  resolvedBy      User?           @relation("DisputeResolver", fields: [resolvedById], references: [id])
+  resolvedAt      DateTime?
   // Assignment — who on the team is handling this dispute
-  assignedToId  String?
-  assignedTo    User?         @relation("DisputeAssignee", fields: [assignedToId], references: [id])
-  assignedAt    DateTime?
-  assignedById  String?
+  assignedToId    String?
+  assignedTo      User?           @relation("DisputeAssignee", fields: [assignedToId], references: [id])
+  assignedAt      DateTime?
+  assignedById    String?
   // Escalation path (1 = L1 support, 2 = finance/admin, 3 = super-admin)
-  escalationLevel Int          @default(1)
+  escalationLevel Int             @default(1)
   escalatedAt     DateTime?
   escalatedById   String?
   escalationNote  String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 
   comments      DisputeComment[]
   slaAssignment SlaAssignment?
@@ -989,7 +993,7 @@ model DisputeComment {
   authorId    String
   author      User     @relation("DisputeCommenter", fields: [authorId], references: [id])
   content     String
-  attachments Json?    // array of { url, name, mimeType }
+  attachments Json? // array of { url, name, mimeType }
   isInternal  Boolean  @default(false) // true = visible to admins+assignees only (not to parties)
   createdAt   DateTime @default(now())
 
@@ -1002,51 +1006,51 @@ model DisputeComment {
 // ---------------------------------------------------------------------------
 
 model SlaPolicy {
-  id                       String        @id @default(uuid())
-  name                     String
-  description              String?
-  priority                 SlaPriority   @default(MEDIUM)
-  firstResponseHours       Int
-  resolutionHours          Int
-  warningPercent           Int           @default(80)
-  autoEscalate             Boolean       @default(true)
-  isActive                 Boolean       @default(true)
+  id                      String          @id @default(uuid())
+  name                    String
+  description             String?
+  priority                SlaPriority     @default(MEDIUM)
+  firstResponseHours      Int
+  resolutionHours         Int
+  warningPercent          Int             @default(80)
+  autoEscalate            Boolean         @default(true)
+  isActive                Boolean         @default(true)
   // Who gets the warning notification when warningPercent is hit
-  warningNotifyRole        String        @default("SUPPORT")
+  warningNotifyRole       String          @default("SUPPORT")
   // Who gets escalated to on first-response breach
-  firstResponseEscalateTo  String        @default("SUPPORT")
+  firstResponseEscalateTo String          @default("SUPPORT")
   // Who gets escalated to on resolution breach
-  resolutionEscalateTo     String        @default("FINANCE_ADMIN")
-  createdById              String
-  createdBy                User          @relation("SlaPolicyCreator", fields: [createdById], references: [id])
-  createdAt                DateTime      @default(now())
-  updatedAt                DateTime      @updatedAt
-  assignments              SlaAssignment[]
+  resolutionEscalateTo    String          @default("FINANCE_ADMIN")
+  createdById             String
+  createdBy               User            @relation("SlaPolicyCreator", fields: [createdById], references: [id])
+  createdAt               DateTime        @default(now())
+  updatedAt               DateTime        @updatedAt
+  assignments             SlaAssignment[]
 
   @@index([priority])
   @@index([isActive])
 }
 
 model SlaAssignment {
-  id                    String      @id @default(uuid())
-  disputeId             String      @unique
-  dispute               Dispute     @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+  id                    String          @id @default(uuid())
+  disputeId             String          @unique
+  dispute               Dispute         @relation(fields: [disputeId], references: [id], onDelete: Cascade)
   policyId              String
-  policy                SlaPolicy   @relation(fields: [policyId], references: [id])
-  status                SlaStatus   @default(ACTIVE)
+  policy                SlaPolicy       @relation(fields: [policyId], references: [id])
+  status                SlaStatus       @default(ACTIVE)
   firstResponseDue      DateTime
   resolutionDue         DateTime
   firstResponseAt       DateTime?
   resolvedAt            DateTime?
-  firstResponseBreached Boolean     @default(false)
-  resolutionBreached    Boolean     @default(false)
+  firstResponseBreached Boolean         @default(false)
+  resolutionBreached    Boolean         @default(false)
   warningSentAt         DateTime?
   pausedAt              DateTime?
-  pausedDurationMins    Int         @default(0)
+  pausedDurationMins    Int             @default(0)
   assignedById          String?
-  assignedBy            User?       @relation("SlaAssignmentCreator", fields: [assignedById], references: [id])
-  createdAt             DateTime    @default(now())
-  updatedAt             DateTime    @updatedAt
+  assignedBy            User?           @relation("SlaAssignmentCreator", fields: [assignedById], references: [id])
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
   escalations           SlaEscalation[]
 
   @@index([status])
@@ -1055,14 +1059,14 @@ model SlaAssignment {
 }
 
 model SlaEscalation {
-  id            String        @id @default(uuid())
-  assignmentId  String
-  assignment    SlaAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
-  reason        String
-  escalatedTo   String
-  notifiedAt    DateTime      @default(now())
-  resolvedAt    DateTime?
-  createdAt     DateTime      @default(now())
+  id           String        @id @default(uuid())
+  assignmentId String
+  assignment   SlaAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  reason       String
+  escalatedTo  String
+  notifiedAt   DateTime      @default(now())
+  resolvedAt   DateTime?
+  createdAt    DateTime      @default(now())
 
   @@index([assignmentId])
 }
@@ -1113,6 +1117,69 @@ model AuditLog {
   @@index([action])
 }
 
+// ── Hiring Tasks ─────────────────────────────────────────────────────────
+// Track who is responsible for moving a job/application forward.
+// Created manually by recruiters or auto-generated on application status change.
+
+model Task {
+  id          String       @id @default(cuid())
+  type        TaskType     @default(GENERAL)
+  title       String
+  description String?
+  status      TaskStatus   @default(OPEN)
+  priority    TaskPriority @default(MEDIUM)
+  dueDate     DateTime?
+  completedAt DateTime?
+
+  jobId         String?
+  job           Job?         @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  applicationId String?
+  application   Application? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  companyId     String?
+  company       Company?     @relation(fields: [companyId], references: [id], onDelete: SetNull)
+
+  assignedToId String?
+  assignedTo   User?   @relation("TaskAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+  createdById  String
+  createdBy    User    @relation("TaskCreator", fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([assignedToId, status])
+  @@index([applicationId])
+  @@index([jobId])
+  @@index([companyId, status])
+  @@index([dueDate])
+}
+
+enum TaskType {
+  SCREEN_CV
+  PHONE_SCREEN
+  INTERVIEW_SCHEDULE
+  INTERVIEW_CONDUCT
+  REFERENCE_CHECK
+  ASSESSMENT_REVIEW
+  OFFER_PREP
+  OFFER_SEND
+  ONBOARD
+  GENERAL
+}
+
+enum TaskStatus {
+  OPEN
+  IN_PROGRESS
+  DONE
+  CANCELLED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
 model SystemSetting {
   id        String   @id @default(uuid())
   key       String   @unique
@@ -1141,8 +1208,8 @@ model Department {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  members     TeamMember[]
-  slots       AvailabilitySlot[]
+  members TeamMember[]
+  slots   AvailabilitySlot[]
 
   @@index([firmId])
   @@index([leadId])
@@ -1178,15 +1245,15 @@ model TeamMember {
 }
 
 model TeamInvite {
-  id        String       @id @default(uuid())
+  id        String         @id @default(uuid())
   firmId    String
-  firm      User         @relation("FirmInvites", fields: [firmId], references: [id], onDelete: Cascade)
+  firm      User           @relation("FirmInvites", fields: [firmId], references: [id], onDelete: Cascade)
   email     String
   role      TeamMemberRole @default(CONSULTANT)
-  token     String       @unique
-  status    InviteStatus @default(PENDING)
+  token     String         @unique
+  status    InviteStatus   @default(PENDING)
   expiresAt DateTime
-  createdAt DateTime     @default(now())
+  createdAt DateTime       @default(now())
 
   @@index([firmId])
   @@index([email])
@@ -1232,25 +1299,25 @@ model Follow {
 // ---------------------------------------------------------------------------
 
 model Course {
-  id           String       @id @default(uuid())
-  instructorId String
-  instructor   User         @relation("CourseInstructor", fields: [instructorId], references: [id])
-  title        String
-  description  String?
-  thumbnail    String?
-  price        Decimal      @default(0) @db.Decimal(12, 2)
-  currency     String       @default("KES")
-  category     String?
-  level        String?      // BEGINNER, INTERMEDIATE, ADVANCED
-  duration     Int?         // total minutes
-  status       CourseStatus @default(DRAFT)
-  rating       Decimal      @default(0) @db.Decimal(3, 2)
-  totalEnrolled Int         @default(0)
-  tags         String[]     @default([])
-  settings     Json?        // { aiDetection, readingMetrics, proctoring, accessType, accessDays }
-  certConfig   Json?        // { autoIssue, minPassingGrade, gradeScale, templateStyle, customTemplateUrl, signatoryName, signatoryTitle, certNumberPrefix }
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id            String       @id @default(uuid())
+  instructorId  String
+  instructor    User         @relation("CourseInstructor", fields: [instructorId], references: [id])
+  title         String
+  description   String?
+  thumbnail     String?
+  price         Decimal      @default(0) @db.Decimal(12, 2)
+  currency      String       @default("KES")
+  category      String?
+  level         String? // BEGINNER, INTERMEDIATE, ADVANCED
+  duration      Int? // total minutes
+  status        CourseStatus @default(DRAFT)
+  rating        Decimal      @default(0) @db.Decimal(3, 2)
+  totalEnrolled Int          @default(0)
+  tags          String[]     @default([])
+  settings      Json? // { aiDetection, readingMetrics, proctoring, accessType, accessDays }
+  certConfig    Json? // { autoIssue, minPassingGrade, gradeScale, templateStyle, customTemplateUrl, signatoryName, signatoryTitle, certNumberPrefix }
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
   lessons      CourseLesson[]
   enrollments  Enrollment[]
@@ -1263,59 +1330,59 @@ model Course {
 }
 
 model CourseLesson {
-  id           String   @id @default(uuid())
+  id            String           @id @default(uuid())
   courseId      String
-  course       Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  milestoneId  String?
-  milestone    CourseMilestone? @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
-  title        String
-  description  String?
-  contentType  String   @default("VIDEO") // VIDEO, TEXT, QUIZ, ASSIGNMENT
-  videoUrl     String?
-  textContent  String?  // rich text for TEXT type lessons
-  duration     Int?     // minutes
-  sortOrder    Int      @default(0)
-  isFree       Boolean  @default(false)
-  episodeNumber Int?    // episode/session number within the course
-  timeLimitMin  Int?    // quiz timer in minutes; null = no limit
-  maxAttempts   Int?    // null = unlimited retakes
-  createdAt    DateTime @default(now())
+  course        Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  milestoneId   String?
+  milestone     CourseMilestone? @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
+  title         String
+  description   String?
+  contentType   String           @default("VIDEO") // VIDEO, TEXT, QUIZ, ASSIGNMENT
+  videoUrl      String?
+  textContent   String? // rich text for TEXT type lessons
+  duration      Int? // minutes
+  sortOrder     Int              @default(0)
+  isFree        Boolean          @default(false)
+  episodeNumber Int? // episode/session number within the course
+  timeLimitMin  Int? // quiz timer in minutes; null = no limit
+  maxAttempts   Int? // null = unlimited retakes
+  createdAt     DateTime         @default(now())
 
-  questions    LessonQuestion[]
-  assessments  LessonAssessment[]
-  submissions  LessonSubmission[]
+  questions   LessonQuestion[]
+  assessments LessonAssessment[]
+  submissions LessonSubmission[]
 
   @@index([courseId, sortOrder])
   @@index([milestoneId])
 }
 
 model LessonQuestion {
-  id          String   @id @default(uuid())
-  lessonId    String
-  lesson      CourseLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  question    String
-  questionType String  @default("MULTIPLE_CHOICE") // MULTIPLE_CHOICE, TRUE_FALSE, SHORT_ANSWER, ESSAY
-  options     Json?    // ["Option A", "Option B", "Option C", "Option D"] for MCQ
+  id            String       @id @default(uuid())
+  lessonId      String
+  lesson        CourseLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  question      String
+  questionType  String       @default("MULTIPLE_CHOICE") // MULTIPLE_CHOICE, TRUE_FALSE, SHORT_ANSWER, ESSAY
+  options       Json? // ["Option A", "Option B", "Option C", "Option D"] for MCQ
   correctAnswer String? // index or text of correct answer
-  explanation String?  // explanation shown after answering
-  points      Int      @default(1)
-  sortOrder   Int      @default(0)
-  createdAt   DateTime @default(now())
+  explanation   String? // explanation shown after answering
+  points        Int          @default(1)
+  sortOrder     Int          @default(0)
+  createdAt     DateTime     @default(now())
 
-  answers     QuestionAnswer[]
+  answers QuestionAnswer[]
 
   @@index([lessonId, sortOrder])
 }
 
 model QuestionAnswer {
-  id          String   @id @default(uuid())
-  questionId  String
-  question    LessonQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  userId      String
-  answer      String
-  isCorrect   Boolean  @default(false)
-  score       Int      @default(0)
-  createdAt   DateTime @default(now())
+  id         String         @id @default(uuid())
+  questionId String
+  question   LessonQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  userId     String
+  answer     String
+  isCorrect  Boolean        @default(false)
+  score      Int            @default(0)
+  createdAt  DateTime       @default(now())
 
   @@unique([questionId, userId])
   @@index([userId])
@@ -1325,7 +1392,7 @@ model Enrollment {
   id          String           @id @default(uuid())
   userId      String
   user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  courseId     String
+  courseId    String
   course      Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
   status      EnrollmentStatus @default(ACTIVE)
   progress    Int              @default(0) // percentage 0-100
@@ -1345,18 +1412,18 @@ model Enrollment {
 // ---------------------------------------------------------------------------
 
 model InstitutionalAffiliation {
-  id              String   @id @default(uuid())
+  id              String    @id @default(uuid())
   userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   institutionName String
-  role            String?  // e.g. "Lecturer", "Fellow", "Certified Trainer"
+  role            String? // e.g. "Lecturer", "Fellow", "Certified Trainer"
   startDate       DateTime?
   endDate         DateTime?
-  isCurrent       Boolean  @default(true)
+  isCurrent       Boolean   @default(true)
   documentUrl     String?
-  verified        Boolean  @default(false)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  verified        Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   @@index([userId])
 }
@@ -1366,28 +1433,28 @@ model InstitutionalAffiliation {
 // ---------------------------------------------------------------------------
 
 model Invoice {
-  id              String        @id @default(uuid())
-  invoiceNumber   String        @unique
-  issuerId        String
-  issuer          User          @relation("InvoiceIssuer", fields: [issuerId], references: [id])
-  recipientId     String
-  recipient       User          @relation("InvoiceRecipient", fields: [recipientId], references: [id])
-  bookingId       String?
-  courseId         String?
-  subscriptionId  String?
-  amount          Decimal       @db.Decimal(12, 2)
-  tax             Decimal       @default(0) @db.Decimal(12, 2)
-  total           Decimal       @db.Decimal(12, 2)
-  currency        String        @default("KES")
-  status          InvoiceStatus @default(DRAFT)
-  description     String?
-  lineItems       Json?         // [{ description, qty, unitPrice, total }]
-  dueDate         DateTime?
-  paidAt          DateTime?
-  issuedAt        DateTime?
-  metadata        Json?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  id             String        @id @default(uuid())
+  invoiceNumber  String        @unique
+  issuerId       String
+  issuer         User          @relation("InvoiceIssuer", fields: [issuerId], references: [id])
+  recipientId    String
+  recipient      User          @relation("InvoiceRecipient", fields: [recipientId], references: [id])
+  bookingId      String?
+  courseId       String?
+  subscriptionId String?
+  amount         Decimal       @db.Decimal(12, 2)
+  tax            Decimal       @default(0) @db.Decimal(12, 2)
+  total          Decimal       @db.Decimal(12, 2)
+  currency       String        @default("KES")
+  status         InvoiceStatus @default(DRAFT)
+  description    String?
+  lineItems      Json? // [{ description, qty, unitPrice, total }]
+  dueDate        DateTime?
+  paidAt         DateTime?
+  issuedAt       DateTime?
+  metadata       Json?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
   @@index([issuerId])
   @@index([recipientId])
@@ -1400,23 +1467,23 @@ model Invoice {
 // ---------------------------------------------------------------------------
 
 model Payout {
-  id              String        @id @default(uuid())
-  userId          String
-  user            User          @relation(fields: [userId], references: [id])
-  amount          Decimal       @db.Decimal(12, 2)
-  fee             Decimal       @default(0) @db.Decimal(12, 2)
-  netAmount       Decimal       @db.Decimal(12, 2)
-  currency        String        @default("KES")
-  method          PayoutMethod  @default(MPESA)
-  status          PayoutStatus  @default(REQUESTED)
-  destination     String?       // phone number or bank account
-  reference       String?       // M-Pesa receipt or bank ref
-  processedAt     DateTime?
-  approvedBy      String?
-  rejectedReason  String?
-  metadata        Json?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  id             String       @id @default(uuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  amount         Decimal      @db.Decimal(12, 2)
+  fee            Decimal      @default(0) @db.Decimal(12, 2)
+  netAmount      Decimal      @db.Decimal(12, 2)
+  currency       String       @default("KES")
+  method         PayoutMethod @default(MPESA)
+  status         PayoutStatus @default(REQUESTED)
+  destination    String? // phone number or bank account
+  reference      String? // M-Pesa receipt or bank ref
+  processedAt    DateTime?
+  approvedBy     String?
+  rejectedReason String?
+  metadata       Json?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 
   @@index([userId])
   @@index([status])
@@ -1428,17 +1495,17 @@ model Payout {
 // ---------------------------------------------------------------------------
 
 model CommissionOverride {
-  id              String    @id @default(uuid())
-  trainerId       String
-  orgId           String?
-  customRate      Decimal   @db.Decimal(5, 4)
-  reason          String?
-  validFrom       DateTime  @default(now())
-  validUntil      DateTime?
-  isActive        Boolean   @default(true)
-  createdBy       String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id         String    @id @default(uuid())
+  trainerId  String
+  orgId      String?
+  customRate Decimal   @db.Decimal(5, 4)
+  reason     String?
+  validFrom  DateTime  @default(now())
+  validUntil DateTime?
+  isActive   Boolean   @default(true)
+  createdBy  String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   @@index([trainerId])
   @@index([orgId])
@@ -1450,18 +1517,18 @@ model CommissionOverride {
 // ---------------------------------------------------------------------------
 
 model ScheduledReminder {
-  id          String         @id @default(uuid())
+  id          String              @id @default(uuid())
   userId      String
-  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type        ReminderType   @default(CUSTOM)
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        ReminderType        @default(CUSTOM)
   channel     NotificationChannel @default(EMAIL)
   title       String
   message     String
   scheduledAt DateTime
   sentAt      DateTime?
-  status      ReminderStatus @default(SCHEDULED)
+  status      ReminderStatus      @default(SCHEDULED)
   metadata    Json?
-  createdAt   DateTime       @default(now())
+  createdAt   DateTime            @default(now())
 
   @@index([userId])
   @@index([scheduledAt, status])
@@ -1472,37 +1539,37 @@ model ScheduledReminder {
 // ---------------------------------------------------------------------------
 
 model Milestone {
-  id           String          @id @default(uuid())
-  bookingId    String
-  title        String
-  description  String?
-  amount       Decimal         @db.Decimal(12, 2)
-  orderIndex   Int             @default(0)
-  status       MilestoneStatus @default(PENDING)
-  dueDate      DateTime?
-  deliveredAt  DateTime?
-  releasedAt   DateTime?
-  releasedBy   String?
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
+  id          String          @id @default(uuid())
+  bookingId   String
+  title       String
+  description String?
+  amount      Decimal         @db.Decimal(12, 2)
+  orderIndex  Int             @default(0)
+  status      MilestoneStatus @default(PENDING)
+  dueDate     DateTime?
+  deliveredAt DateTime?
+  releasedAt  DateTime?
+  releasedBy  String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 
-  booking     Booking             @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  attendance  AttendanceRecord[]
+  booking    Booking            @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  attendance AttendanceRecord[]
 
   @@index([bookingId])
   @@index([status])
 }
 
 model AttendanceRecord {
-  id             String          @id @default(uuid())
+  id             String         @id @default(uuid())
   bookingId      String
   milestoneId    String?
   userId         String
   checkedInAt    DateTime?
   checkedOutAt   DateTime?
-  presenceStatus PresenceStatus  @default(PRESENT)
+  presenceStatus PresenceStatus @default(PRESENT)
   note           String?
-  createdAt      DateTime        @default(now())
+  createdAt      DateTime       @default(now())
 
   booking   Booking    @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   milestone Milestone? @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
@@ -1520,15 +1587,15 @@ model AttendanceRecord {
 model UserNeedsProfile {
   id                    String           @id @default(uuid())
   userId                String           @unique
-  goals                 String[]         @default([])       // e.g. ["career-change", "upskill", "certification"]
+  goals                 String[]         @default([]) // e.g. ["career-change", "upskill", "certification"]
   currentLevel          ExperienceLevel?
-  preferredSessionTypes String[]         @default([])       // VIRTUAL | PHYSICAL | HYBRID
-  categoriesInterest    String[]         @default([])       // category names the user cares about
+  preferredSessionTypes String[]         @default([]) // VIRTUAL | PHYSICAL | HYBRID
+  categoriesInterest    String[]         @default([]) // category names the user cares about
   problemStatement      String?          @db.Text
   budgetMin             Decimal?         @db.Decimal(12, 2)
   budgetMax             Decimal?         @db.Decimal(12, 2)
-  timeframeWeeks        Int?                                 // target learning horizon
-  urgency               String?                              // "low" | "medium" | "high"
+  timeframeWeeks        Int? // target learning horizon
+  urgency               String? // "low" | "medium" | "high"
   completedAt           DateTime?
   createdAt             DateTime         @default(now())
   updatedAt             DateTime         @updatedAt
@@ -1543,18 +1610,18 @@ model UserNeedsProfile {
 // ---------------------------------------------------------------------------
 
 model CourseMilestone {
-  id            String   @id @default(uuid())
-  courseId      String
-  title         String
-  description   String?  @db.Text
-  orderIndex    Int      @default(0)
-  passingScore  Int      @default(70)   // percentage
-  weight        Int      @default(1)    // weight in final grade calc
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String   @id @default(uuid())
+  courseId     String
+  title        String
+  description  String?  @db.Text
+  orderIndex   Int      @default(0)
+  passingScore Int      @default(70) // percentage
+  weight       Int      @default(1) // weight in final grade calc
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   course      Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  lessons     CourseLesson[]                                        // optional lesson grouping
+  lessons     CourseLesson[] // optional lesson grouping
   submissions LessonSubmission[]
 
   @@index([courseId])
@@ -1569,16 +1636,16 @@ enum AssessmentType {
 }
 
 model LessonAssessment {
-  id           String         @id @default(uuid())
-  lessonId     String
-  question     String         @db.Text
-  type         AssessmentType @default(MULTIPLE_CHOICE)
-  options      Json?                                  // array for MC/checkbox
-  correctAnswer Json?                                 // string or array
-  points       Int            @default(10)
-  orderIndex   Int            @default(0)
-  explanation  String?        @db.Text               // shown during review
-  createdAt    DateTime       @default(now())
+  id            String         @id @default(uuid())
+  lessonId      String
+  question      String         @db.Text
+  type          AssessmentType @default(MULTIPLE_CHOICE)
+  options       Json? // array for MC/checkbox
+  correctAnswer Json? // string or array
+  points        Int            @default(10)
+  orderIndex    Int            @default(0)
+  explanation   String?        @db.Text // shown during review
+  createdAt     DateTime       @default(now())
 
   lesson CourseLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
@@ -1586,15 +1653,15 @@ model LessonAssessment {
 }
 
 model LessonSubmission {
-  id                String   @id @default(uuid())
+  id                String    @id @default(uuid())
   userId            String
   lessonId          String
   courseMilestoneId String?
-  answers           Json                              // { [assessmentId]: answer }
-  score             Int      @default(0)              // 0-100
-  passed            Boolean  @default(false)
-  feedback          String?  @db.Text
-  submittedAt       DateTime @default(now())
+  answers           Json // { [assessmentId]: answer }
+  score             Int       @default(0) // 0-100
+  passed            Boolean   @default(false)
+  feedback          String?   @db.Text
+  submittedAt       DateTime  @default(now())
   gradedAt          DateTime?
   gradedById        String?
 
@@ -1602,9 +1669,9 @@ model LessonSubmission {
   lesson    CourseLesson     @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   milestone CourseMilestone? @relation(fields: [courseMilestoneId], references: [id], onDelete: SetNull)
 
+  @@unique([userId, lessonId])
   @@index([userId])
   @@index([lessonId])
-  @@unique([userId, lessonId])
 }
 
 // ---------------------------------------------------------------------------
@@ -1621,12 +1688,12 @@ model CourseCertificate {
   courseId          String
   userId            String
   enrollmentId      String?           @unique
-  certificateNumber String            @unique       // e.g. SKS-CERT-2026-00001
-  verificationCode  String            @unique       // short slug for public verify URL
+  certificateNumber String            @unique // e.g. SKS-CERT-2026-00001
+  verificationCode  String            @unique // short slug for public verify URL
   finalGrade        Decimal?          @db.Decimal(5, 2)
   status            CertificateStatus @default(ISSUED)
-  templateUrl       String?                          // optional branded template asset
-  metadata          Json?                            // {instructorName, courseTitle, hours, etc.}
+  templateUrl       String? // optional branded template asset
+  metadata          Json? // {instructorName, courseTitle, hours, etc.}
   issuedAt          DateTime          @default(now())
   revokedAt         DateTime?
   revokedBy         String?
@@ -1642,16 +1709,16 @@ model CourseCertificate {
 }
 
 model SessionRecording {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   bookingId   String
   url         String
   durationSec Int?
   startedAt   DateTime
   endedAt     DateTime?
   recordedBy  String?
-  transcribed Boolean  @default(false)
+  transcribed Boolean   @default(false)
   metadata    Json?
-  createdAt   DateTime @default(now())
+  createdAt   DateTime  @default(now())
 
   booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
@@ -1664,7 +1731,7 @@ model SessionRecording {
 
 model PlatformWallet {
   id        String   @id @default(cuid())
-  type      String   // HOLDING | REVENUE | REFUND_RESERVE
+  type      String // HOLDING | REVENUE | REFUND_RESERVE
   balance   Decimal  @default(0) @db.Decimal(15, 2)
   currency  String   @default("KES")
   updatedAt DateTime @updatedAt
@@ -1725,6 +1792,7 @@ model Company {
   updatedAt   DateTime    @updatedAt
   recruiters  Recruiter[]
   jobs        Job[]
+  tasks       Task[]
 }
 
 model Recruiter {
@@ -1735,31 +1803,33 @@ model Recruiter {
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id])
   company   Company  @relation(fields: [companyId], references: [id])
+
   @@unique([userId, companyId])
 }
 
 model Job {
-  id           String      @id @default(cuid())
+  id           String        @id @default(cuid())
   companyId    String
   postedById   String
   title        String
   description  String
   requirements String?
   location     String?
-  jobType      JobType     @default(FULL_TIME)
+  jobType      JobType       @default(FULL_TIME)
   salaryMin    Float?
   salaryMax    Float?
-  currency     String      @default("KES")
-  status       JobStatus   @default(ACTIVE)
-  expiresAt     DateTime?
-  hiringStages  Json        @default("[]")
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  company       Company     @relation(fields: [companyId], references: [id])
-  postedBy      User        @relation("JobsPosted", fields: [postedById], references: [id])
-  jobSkills     JobSkill[]
-  applications  Application[]
-  savedJobs     SavedJob[]
+  currency     String        @default("KES")
+  status       JobStatus     @default(ACTIVE)
+  expiresAt    DateTime?
+  hiringStages Json          @default("[]")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  company      Company       @relation(fields: [companyId], references: [id])
+  postedBy     User          @relation("JobsPosted", fields: [postedById], references: [id])
+  jobSkills    JobSkill[]
+  applications Application[]
+  savedJobs    SavedJob[]
+  tasks        Task[]
 }
 
 model JobSkill {
@@ -1768,6 +1838,7 @@ model JobSkill {
   skillId String
   job     Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
   skill   Skill  @relation(fields: [skillId], references: [id])
+
   @@unique([jobId, skillId])
 }
 
@@ -1778,23 +1849,26 @@ model SavedJob {
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id])
   job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
   @@unique([userId, jobId])
 }
 
 model Application {
-  id           String            @id @default(cuid())
-  userId       String
-  jobId        String
-  status       ApplicationStatus @default(SUBMITTED)
-  coverLetter  String?
-  resumeUrl    String?
-  notes        String?
-  scheduledAt  DateTime?
-  meetingLink  String?
-  appliedAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
-  user         User              @relation(fields: [userId], references: [id])
-  job          Job               @relation(fields: [jobId], references: [id])
+  id          String            @id @default(cuid())
+  userId      String
+  jobId       String
+  status      ApplicationStatus @default(SUBMITTED)
+  coverLetter String?
+  resumeUrl   String?
+  notes       String?
+  scheduledAt DateTime?
+  meetingLink String?
+  appliedAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  user        User              @relation(fields: [userId], references: [id])
+  job         Job               @relation(fields: [jobId], references: [id])
+  tasks       Task[]
+
   @@unique([userId, jobId])
 }
 
@@ -1802,9 +1876,10 @@ model JobInteraction {
   id        String   @id @default(cuid())
   userId    String
   jobId     String
-  action    String   // view | click | save | apply | skip
+  action    String // view | click | save | apply | skip
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id])
+
   @@index([userId])
   @@index([jobId])
 }
@@ -1831,17 +1906,17 @@ model WorkExperience {
 }
 
 model Education {
-  id           String    @id @default(cuid())
+  id           String   @id @default(cuid())
   userId       String
   institution  String
   degree       String
   fieldOfStudy String?
   startYear    Int
   endYear      Int?
-  isCurrent    Boolean   @default(false)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isCurrent    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }

@@ -42,7 +42,7 @@ export class MilestonesService {
     );
   }
 
-  /** Get or create the PTAK platform wallet (mirrors EscrowService) */
+  /** Get or create the Uteo platform wallet (mirrors EscrowService) */
   private async _getOrCreatePlatformWallet(tx: Prisma.TransactionClient) {
     const setting = await tx.systemSetting.findUnique({
       where: { key: 'platform.wallet_id' },

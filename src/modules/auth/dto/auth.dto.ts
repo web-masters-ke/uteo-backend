@@ -41,7 +41,7 @@ export class RegisterDto {
   @IsOptional() @IsString() firmId?: string;          // Attach trainer to this org
   @IsOptional() @IsString() departmentId?: string;    // Assign to department within org
   @IsOptional() @IsString() teamRole?: string;        // CONSULTANT, ASSOCIATE, etc.
-  @IsOptional() isInHouse?: boolean;                  // In-house PTAK trainer
+  @IsOptional() isInHouse?: boolean;                  // In-house Uteo trainer
 
   // Client assignment — attach to specific trainer
   @IsOptional() @IsString() assignedTrainerId?: string;

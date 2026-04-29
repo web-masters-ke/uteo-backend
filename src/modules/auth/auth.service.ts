@@ -108,7 +108,7 @@ export class AuthService {
           });
         }
 
-        // Mark as in-house PTAK trainer (attach to admin/platform)
+        // Mark as in-house Uteo trainer (attach to admin/platform)
         if (dto.isInHouse) {
           const admin = await tx.user.findFirst({ where: { role: 'SUPER_ADMIN' }, orderBy: { createdAt: 'asc' } });
           if (admin) {

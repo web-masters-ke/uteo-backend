@@ -46,11 +46,11 @@ export class BongaSmsService {
   }
 
   async sendOtp(phoneNumber: string, otp: string): Promise<boolean> {
-    return this.sendSms(phoneNumber, `Your PTAK verification code is: ${otp}. It expires in 10 minutes.`);
+    return this.sendSms(phoneNumber, `Your Uteo verification code is: ${otp}. It expires in 10 minutes.`);
   }
 
   async sendBookingReminder(phoneNumber: string, trainerName: string, dateTime: string): Promise<boolean> {
-    return this.sendSms(phoneNumber, `PTAK Reminder: Your session with ${trainerName} is scheduled for ${dateTime}.`);
+    return this.sendSms(phoneNumber, `Uteo Reminder: Your session with ${trainerName} is scheduled for ${dateTime}.`);
   }
 
   private normalizePhone(phone: string): string {

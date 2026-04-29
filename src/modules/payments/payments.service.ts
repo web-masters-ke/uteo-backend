@@ -23,8 +23,8 @@ export class PaymentsService {
         status: 'PENDING',
         metadata: {
           phone: dto.phone,
-          accountReference: dto.accountReference || 'PTAK',
-          description: dto.description || 'PTAK Payment',
+          accountReference: dto.accountReference || 'Uteo',
+          description: dto.description || 'Uteo Payment',
         },
       },
     });
@@ -34,7 +34,7 @@ export class PaymentsService {
         phone: dto.phone,
         amount: dto.amount,
         accountReference: dto.accountReference || `SS${payment.id.slice(0, 6)}`,
-        description: dto.description || 'PTAK',
+        description: dto.description || 'Uteo',
       });
       // Persist the merchant/checkout request IDs so the callback can reconcile
       await this.prisma.payment.update({

@@ -75,19 +75,19 @@ export class TeamService {
       where: { id: firmId },
       select: { firstName: true, lastName: true, name: true },
     });
-    const firmName = firm?.name || `${firm?.firstName || ''} ${firm?.lastName || ''}`.trim() || 'A PTAK firm';
+    const firmName = firm?.name || `${firm?.firstName || ''} ${firm?.lastName || ''}`.trim() || 'A Uteo firm';
     const acceptUrl = `${process.env.APP_URL || 'http://localhost:3000'}/team/invite?token=${token}`;
 
     await this.brevo.sendEmail({
       to: [{ email: dto.email }],
-      subject: `You've been invited to join ${firmName} on PTAK`,
+      subject: `You've been invited to join ${firmName} on Uteo`,
       htmlContent: `
         <h1>Team Invitation</h1>
         <p>You have been invited to join <strong>${firmName}</strong> as a <strong>${dto.role}</strong>${dto.title ? ` (${dto.title})` : ''}.</p>
         <p>Click the link below to accept the invitation:</p>
         <p><a href="${acceptUrl}">${acceptUrl}</a></p>
         <p>This invitation expires in 7 days.</p>
-        <p>Best regards,<br/>The PTAK Team</p>
+        <p>Best regards,<br/>The Uteo Team</p>
       `,
     });
 
@@ -169,12 +169,12 @@ export class TeamService {
 
     await this.brevo.sendEmail({
       to: [{ email: user.email, name: user.firstName || undefined }],
-      subject: `Welcome to ${firmName} on PTAK`,
+      subject: `Welcome to ${firmName} on Uteo`,
       htmlContent: `
         <h1>Welcome aboard!</h1>
         <p>Hi ${user.firstName || 'there'},</p>
-        <p>You are now a member of <strong>${firmName}</strong> on PTAK. You can start receiving assigned bookings and collaborating with your team.</p>
-        <p>Best regards,<br/>The PTAK Team</p>
+        <p>You are now a member of <strong>${firmName}</strong> on Uteo. You can start receiving assigned bookings and collaborating with your team.</p>
+        <p>Best regards,<br/>The Uteo Team</p>
       `,
     });
 
@@ -323,7 +323,7 @@ export class TeamService {
     return updated;
   }
 
-  // ── Add an existing PTAK trainer directly to the firm ────────────────────
+  // ── Add an existing Uteo trainer directly to the firm ────────────────────
   async addExistingTrainer(
     firmId: string,
     callerId: string,
@@ -365,8 +365,8 @@ export class TeamService {
     const firmName = firmUser?.name || firmUser?.firstName || 'an organization';
     await this.brevo.sendEmail({
       to: [{ email: trainer.email, name: trainer.firstName || undefined }],
-      subject: `You've been added to ${firmName} on PTAK`,
-      htmlContent: `<p>Hi ${trainer.firstName || 'there'},</p><p>You have been added to <strong>${firmName}</strong> as a <strong>${role}</strong> on PTAK. You can now receive assigned bookings and collaborate with the team.</p><p>Best,<br/>The PTAK Team</p>`,
+      subject: `You've been added to ${firmName} on Uteo`,
+      htmlContent: `<p>Hi ${trainer.firstName || 'there'},</p><p>You have been added to <strong>${firmName}</strong> as a <strong>${role}</strong> on Uteo. You can now receive assigned bookings and collaborate with the team.</p><p>Best,<br/>The Uteo Team</p>`,
     }).catch(() => {});
 
     this.logger.log(`Trainer ${trainer.id} added to firm ${firmId} as ${role} by ${callerId}`);

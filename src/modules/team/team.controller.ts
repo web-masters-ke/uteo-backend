@@ -60,7 +60,7 @@ export class TeamController {
     return this.svc.invite(uid, uid, dto);
   }
 
-  /** Add an existing PTAK trainer directly (no email invite needed) */
+  /** Add an existing Uteo trainer directly (no email invite needed) */
   @Post('add-trainer')
   @UseGuards(RolesGuard)
   @Roles('TRAINER')

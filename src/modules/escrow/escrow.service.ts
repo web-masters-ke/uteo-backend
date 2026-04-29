@@ -52,7 +52,7 @@ export class EscrowService {
 
       await this.walletService.creditWallet(trainerWallet.id, payout, 'ESCROW', escrow.id, `Payout for booking ${dto.bookingId}`, tx);
 
-      // Credit PTAK platform wallet with commission
+      // Credit Uteo platform wallet with commission
       const platformWallet = await this._getOrCreatePlatformWallet(tx);
       if (commissionAmount > 0) {
         await this.walletService.creditWallet(platformWallet.id, commissionAmount, 'COMMISSION', escrow.id, `Commission from booking ${dto.bookingId} (${(rate * 100).toFixed(1)}%)`, tx);
@@ -123,7 +123,7 @@ export class EscrowService {
     return e;
   }
 
-  /** Get or create the PTAK platform wallet — uses the PLATFORM_WALLET system setting */
+  /** Get or create the Uteo platform wallet — uses the PLATFORM_WALLET system setting */
   private async _getOrCreatePlatformWallet(tx: any) {
     // Check for existing platform wallet setting
     const setting = await tx.systemSetting.findUnique({ where: { key: 'platform.wallet_id' } });

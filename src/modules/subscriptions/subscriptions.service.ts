@@ -499,7 +499,7 @@ export class SubscriptionsService {
     });
   }
 
-  /** Resolve the PTAK platform wallet ID from system settings or SUPER_ADMIN user */
+  /** Resolve the Uteo platform wallet ID from system settings or SUPER_ADMIN user */
   private async _getPlatformWalletId(tx: any): Promise<string> {
     const setting = await tx.systemSetting.findUnique({ where: { key: 'platform.wallet_id' } });
     if (setting) {

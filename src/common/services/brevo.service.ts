@@ -18,7 +18,7 @@ export class BrevoService {
   constructor() {
     this.apiKey = process.env.BREVO_API_KEY || '';
     this.fromEmail = process.env.BREVO_FROM_EMAIL || 'noreply@uteo.co.ke';
-    this.fromName = process.env.EMAIL_FROM_NAME || 'PTAK';
+    this.fromName = process.env.EMAIL_FROM_NAME || 'Uteo';
   }
 
   async sendEmail(options: SendEmailOptions): Promise<boolean> {
@@ -55,8 +55,8 @@ export class BrevoService {
   async sendWelcomeEmail(email: string, firstName: string): Promise<boolean> {
     return this.sendEmail({
       to: [{ email, name: firstName }],
-      subject: 'Welcome to PTAK',
-      htmlContent: `<h1>Welcome to PTAK, ${firstName}!</h1><p>Thank you for joining the Professional Trainers Association of Kenya platform.</p><p>Best regards,<br/>The PTAK Team</p>`,
+      subject: 'Welcome to Uteo',
+      htmlContent: `<h1>Welcome to Uteo, ${firstName}!</h1><p>Thank you for joining the Uteo platform.</p><p>Best regards,<br/>The Uteo Team</p>`,
     });
   }
 
@@ -64,7 +64,7 @@ export class BrevoService {
     const resetUrl = `${process.env.APP_URL || 'http://localhost:3000'}/auth/reset-password?token=${resetToken}`;
     return this.sendEmail({
       to: [{ email, name: firstName }],
-      subject: 'Reset Your PTAK Password',
+      subject: 'Reset Your Uteo Password',
       htmlContent: `<h1>Password Reset</h1><p>Hi ${firstName},</p><p>Click to reset: <a href="${resetUrl}">${resetUrl}</a></p><p>Expires in 1 hour.</p>`,
     });
   }
@@ -72,7 +72,7 @@ export class BrevoService {
   async sendBookingConfirmationEmail(email: string, firstName: string, details: { trainerName: string; date: string; time: string; sessionType: string }): Promise<boolean> {
     return this.sendEmail({
       to: [{ email, name: firstName }],
-      subject: 'Booking Confirmed - PTAK',
+      subject: 'Booking Confirmed - Uteo',
       htmlContent: `<h1>Booking Confirmed!</h1><p>Hi ${firstName},</p><p>Session with <strong>${details.trainerName}</strong> on ${details.date} at ${details.time} (${details.sessionType}).</p>`,
     });
   }
@@ -81,7 +81,7 @@ export class BrevoService {
     return this.sendEmail({
       to: [{ email, name }],
       subject: title,
-      htmlContent: `<h1>${title}</h1><p>Hi ${name},</p><p>${message}</p><p>Best regards,<br/>The PTAK Team</p>`,
+      htmlContent: `<h1>${title}</h1><p>Hi ${name},</p><p>${message}</p><p>Best regards,<br/>The Uteo Team</p>`,
     });
   }
 

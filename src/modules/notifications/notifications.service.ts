@@ -145,7 +145,7 @@ export class NotificationsService {
     const name = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Client';
     const trainerName = `${trainer.firstName || ''} ${trainer.lastName || ''}`.trim() || 'Your Trainer';
     const scheduledDate = new Date(booking.scheduledAt).toLocaleString('en-KE', { dateStyle: 'full', timeStyle: 'short' });
-    const title = 'Booking Confirmed — PTAK';
+    const title = 'Booking Confirmed — Uteo';
     const body = `Hi ${name}, your session with ${trainerName} is confirmed for ${scheduledDate} (${booking.duration} min, ${booking.sessionType}). Amount: ${booking.currency} ${Number(booking.amount).toFixed(2)}.`;
     const htmlBody = `
       <div style="font-family:sans-serif;max-width:560px;margin:0 auto">
@@ -159,7 +159,7 @@ export class NotificationsService {
           <tr><td style="padding:8px 0;color:#666;font-size:14px">Session Type</td><td style="padding:8px 0;font-weight:600">${booking.sessionType}</td></tr>
           <tr><td style="padding:8px 0;color:#666;font-size:14px">Amount</td><td style="padding:8px 0;font-weight:600">${booking.currency} ${Number(booking.amount).toFixed(2)}</td></tr>
         </table>
-        <p>Best regards,<br/>The PTAK Team</p>
+        <p>Best regards,<br/>The Uteo Team</p>
       </div>`;
 
     const metadata: Record<string, string> = { bookingId: booking.id, trainerId: trainer.id };

@@ -140,8 +140,8 @@ export class DarajaService {
       PartyB: shortcode,
       PhoneNumber: this.formatPhone(params.phone),
       CallBackURL: callback,
-      AccountReference: (params.accountReference || 'PTAK').slice(0, 12),
-      TransactionDesc: (params.description || 'PTAK wallet top-up').slice(0, 13),
+      AccountReference: (params.accountReference || 'Uteo').slice(0, 12),
+      TransactionDesc: (params.description || 'Uteo wallet top-up').slice(0, 13),
     };
 
     try {

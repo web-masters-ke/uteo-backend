@@ -290,7 +290,7 @@ export class InvoicesService {
     const recipient = await this.prisma.user.findUnique({ where: { id: invoice.recipientId } });
     const issuer = await this.prisma.user.findUnique({ where: { id: invoice.issuerId } });
     if (recipient?.email) {
-      const issuerName = issuer ? `${issuer.firstName} ${issuer.lastName}`.trim() : 'PTAK';
+      const issuerName = issuer ? `${issuer.firstName} ${issuer.lastName}`.trim() : 'Uteo';
       const totalFormatted = `KES ${Number(invoice.total).toLocaleString('en-KE')}`;
       const dueDateFormatted = invoice.dueDate
         ? new Date(invoice.dueDate).toLocaleDateString('en-KE', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -302,7 +302,7 @@ export class InvoicesService {
         htmlContent: `
           <div style="font-family: 'Segoe UI', system-ui, sans-serif; max-width: 600px; margin: 0 auto; color: #1e293b;">
             <div style="background: #1E3A5F; padding: 24px 32px; border-radius: 12px 12px 0 0;">
-              <h1 style="color: white; margin: 0; font-size: 20px;">PTAK</h1>
+              <h1 style="color: white; margin: 0; font-size: 20px;">Uteo</h1>
               <p style="color: rgba(255,255,255,0.7); margin: 4px 0 0; font-size: 12px;">LEARN, GROW, SUCCEED</p>
             </div>
             <div style="padding: 32px; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 12px 12px;">
@@ -327,10 +327,10 @@ export class InvoicesService {
                 </table>
               </div>
               <p style="font-size: 14px; color: #475569; margin-bottom: 24px;">
-                Log in to your PTAK account to view the full invoice and make a payment.
+                Log in to your Uteo account to view the full invoice and make a payment.
               </p>
               <p style="font-size: 13px; color: #94a3b8; margin-top: 32px;">
-                Best regards,<br/>The PTAK Team
+                Best regards,<br/>The Uteo Team
               </p>
             </div>
           </div>`,

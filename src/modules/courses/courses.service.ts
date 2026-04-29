@@ -464,7 +464,7 @@ export class CoursesService {
     return { questions, totalPoints, earnedPoints, percentage: totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : 0 };
   }
 
-  /** Resolve the PTAK platform wallet ID from system settings or SUPER_ADMIN user */
+  /** Resolve the Uteo platform wallet ID from system settings or SUPER_ADMIN user */
   private async _getPlatformWalletId(tx: any): Promise<string> {
     const setting = await tx.systemSetting.findUnique({ where: { key: 'platform.wallet_id' } });
     if (setting) {
@@ -576,7 +576,7 @@ export class CoursesService {
 
     const year = new Date().getFullYear();
     const count = await this.prisma.courseCertificate.count();
-    const certNumber = `PTAK-CERT-${year}-${String(count + 1).padStart(5, '0')}`;
+    const certNumber = `UTEO-CERT-${year}-${String(count + 1).padStart(5, '0')}`;
     const verCode = Math.random().toString(36).substring(2, 10).toUpperCase();
 
     return this.prisma.courseCertificate.upsert({

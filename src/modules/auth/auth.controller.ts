@@ -13,6 +13,7 @@ import {
   RefreshTokenDto,
   ForgotPasswordDto,
   ResetPasswordDto,
+  CheckIdentifierDto,
 } from './dto/auth.dto';
 import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -25,6 +26,13 @@ export class AuthController {
   @Post('register')
   register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);
+  }
+
+  @Public()
+  @Post('check-availability')
+  @HttpCode(HttpStatus.OK)
+  checkAvailability(@Body() dto: CheckIdentifierDto) {
+    return this.authService.checkAvailability(dto);
   }
 
   @Public()

@@ -15,7 +15,17 @@ import {
   RefreshTokenDto,
   ForgotPasswordDto,
   ResetPasswordDto,
+  CheckIdentifierDto,
 } from './dto/auth.dto';
+import {
+  EmailAlreadyExistsException,
+  PhoneAlreadyExistsException,
+  InvalidCredentialsException,
+  AccountSuspendedException,
+  AccountDeactivatedException,
+  InvalidPhoneException,
+} from './exceptions/auth.exceptions';
+import { normalisePhone } from './utils/phone';
 
 @Injectable()
 export class AuthService {
@@ -30,17 +40,18 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto) {
-    const existingEmail = await this.prisma.user.findUnique({
-      where: { email: dto.email.toLowerCase() },
-    });
-    if (existingEmail) throw new ConflictException('Email already registered');
+    const email = dto.email.toLowerCase().trim();
+    const existingEmail = await this.prisma.user.findUnique({ where: { email } });
+    if (existingEmail) throw new EmailAlreadyExistsException(email);
 
+    let normalisedPhone: string | null = null;
     if (dto.phone) {
+      normalisedPhone = normalisePhone(dto.phone);
+      if (!normalisedPhone) throw new InvalidPhoneException();
       const existingPhone = await this.prisma.user.findUnique({
-        where: { phone: dto.phone },
+        where: { phone: normalisedPhone },
       });
-      if (existingPhone)
-        throw new ConflictException('Phone number already registered');
+      if (existingPhone) throw new PhoneAlreadyExistsException(normalisedPhone);
     }
 
     const allowedRoles = ['CLIENT', 'TRAINER'];
@@ -51,12 +62,12 @@ export class AuthService {
     const user = await this.prisma.$transaction(async (tx) => {
       const newUser = await tx.user.create({
         data: {
-          email: dto.email.toLowerCase(),
-          phone: dto.phone || null,
+          email,
+          phone: normalisedPhone,
           passwordHash,
-          firstName: dto.firstName,
-          lastName: dto.lastName,
-          name: [dto.firstName, dto.lastName].filter(Boolean).join(' ') || null,
+          firstName: dto.firstName?.trim() || null,
+          lastName: dto.lastName?.trim() || null,
+          name: [dto.firstName?.trim(), dto.lastName?.trim()].filter(Boolean).join(' ') || null,
           role: role as any,
           status: 'ACTIVE',
           emailVerified: false,
@@ -199,21 +210,27 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: dto.email.toLowerCase() },
-    });
-    if (!user || !user.passwordHash)
-      throw new UnauthorizedException('Invalid email or password');
-    if (user.deletedAt)
-      throw new UnauthorizedException('Account has been deactivated');
-    if (user.status === 'SUSPENDED')
-      throw new UnauthorizedException('Account is suspended');
-    if (user.status === 'DEACTIVATED')
-      throw new UnauthorizedException('Account is deactivated');
+    const raw = (dto.identifier ?? dto.email ?? '').trim();
+    if (!raw) throw new InvalidCredentialsException();
+
+    const looksLikeEmail = raw.includes('@');
+    let user;
+
+    if (looksLikeEmail) {
+      user = await this.prisma.user.findUnique({ where: { email: raw.toLowerCase() } });
+    } else {
+      const phone = normalisePhone(raw);
+      if (!phone) throw new InvalidCredentialsException();
+      user = await this.prisma.user.findUnique({ where: { phone } });
+    }
+
+    if (!user || !user.passwordHash) throw new InvalidCredentialsException();
+    if (user.deletedAt) throw new AccountDeactivatedException();
+    if (user.status === 'SUSPENDED') throw new AccountSuspendedException();
+    if (user.status === 'DEACTIVATED') throw new AccountDeactivatedException();
 
     const validPassword = await bcrypt.compare(dto.password, user.passwordHash);
-    if (!validPassword)
-      throw new UnauthorizedException('Invalid email or password');
+    if (!validPassword) throw new InvalidCredentialsException();
 
     await this.prisma.user.update({
       where: { id: user.id },
@@ -227,6 +244,28 @@ export class AuthService {
       refreshToken: tokens.refreshToken,
       user: enriched,
     };
+  }
+
+  /** Real-time availability check for the registration form. */
+  async checkAvailability(dto: CheckIdentifierDto) {
+    const result: { email?: { available: boolean }; phone?: { available: boolean; normalised?: string } } = {};
+
+    if (dto.email) {
+      const email = dto.email.toLowerCase().trim();
+      const existing = await this.prisma.user.findUnique({ where: { email }, select: { id: true } });
+      result.email = { available: !existing };
+    }
+    if (dto.phone) {
+      const normalised = normalisePhone(dto.phone);
+      if (!normalised) {
+        result.phone = { available: false };
+      } else {
+        const existing = await this.prisma.user.findUnique({ where: { phone: normalised }, select: { id: true } });
+        result.phone = { available: !existing, normalised };
+      }
+    }
+
+    return result;
   }
 
   async refresh(dto: RefreshTokenDto) {

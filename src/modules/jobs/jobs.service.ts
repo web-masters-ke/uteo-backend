@@ -175,15 +175,34 @@ export class JobsService {
     const job = await this.prisma.job.findUnique({ where: { id } });
     if (!job) throw new NotFoundException('Job not found');
     const isAdmin = userRole === 'ADMIN' || userRole === 'SUPER_ADMIN';
-    if (!isAdmin && job.postedById !== userId) {
-      throw new ForbiddenException('Not authorised to delete this job');
+    // Allow the poster, an admin, or any recruiter at the same company
+    let allowed = isAdmin || job.postedById === userId;
+    if (!allowed) {
+      const recruiter = await this.prisma.recruiter.findUnique({
+        where: { userId_companyId: { userId, companyId: job.companyId } },
+        select: { role: true },
+      });
+      if (recruiter && (recruiter.role === 'OWNER' || recruiter.role === 'ADMIN')) {
+        allowed = true;
+      }
     }
-    // Application has no onDelete:Cascade — must delete children before job
-    await this.prisma.$transaction(async (tx) => {
-      await tx.application.deleteMany({ where: { jobId: id } });
-      await tx.job.delete({ where: { id } });
+    if (!allowed) throw new ForbiddenException('Not authorised to delete this job');
+
+    // Soft-close instead of destroying the row. Keeps Application history
+    // intact so candidates can still see "you applied to this role — no longer
+    // available" rather than a 404. Hard-delete is reserved for ADMIN.
+    if (isAdmin && (job.status as string) === 'CLOSED') {
+      await this.prisma.$transaction(async (tx) => {
+        await tx.application.deleteMany({ where: { jobId: id } });
+        await tx.job.delete({ where: { id } });
+      });
+      return { message: 'Job permanently deleted' };
+    }
+    await this.prisma.job.update({
+      where: { id },
+      data: { status: 'CLOSED' },
     });
-    return { message: 'Job deleted' };
+    return { message: 'Job closed — no longer accepting applications' };
   }
 
   async saveJob(jobId: string, userId: string) {

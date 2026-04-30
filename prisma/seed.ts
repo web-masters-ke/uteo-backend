@@ -660,7 +660,7 @@ async function main() {
         description: 'East Africa\'s premier technical recruiting firm. We connect top talent with high-growth companies across Kenya, Uganda, and Tanzania.',
         website: 'https://kakairecruiting.co.ke', size: 'SMALL',
         location: 'Nairobi, Kenya', isVerified: true,
-        logoUrl: 'https://logo.clearbit.com/kakairecruiting.co.ke',
+        logoUrl: 'https://ui-avatars.com/api/?name=Kakai+Talent+Solutions&background=192C67&color=fff&bold=true&size=200',
       },
     }),
     prisma.company.create({
@@ -669,7 +669,7 @@ async function main() {
         description: 'Kenya\'s leading mobile network operator and technology company. Home of M-PESA — Africa\'s largest mobile money service.',
         website: 'https://safaricom.co.ke', size: 'ENTERPRISE',
         location: 'Nairobi, Kenya', isVerified: true,
-        logoUrl: 'https://logo.clearbit.com/safaricom.co.ke',
+        logoUrl: 'https://ui-avatars.com/api/?name=Safaricom+PLC&background=192C67&color=fff&bold=true&size=200',
       },
     }),
     prisma.company.create({
@@ -678,7 +678,7 @@ async function main() {
         description: 'The largest commercial bank in Kenya and one of the largest in East Africa. Operating in 7 countries with 500+ branches.',
         website: 'https://kcbgroup.com', size: 'LARGE',
         location: 'Nairobi, Kenya', isVerified: true,
-        logoUrl: 'https://logo.clearbit.com/kcbgroup.com',
+        logoUrl: 'https://ui-avatars.com/api/?name=KCB+Group&background=192C67&color=fff&bold=true&size=200',
       },
     }),
     prisma.company.create({
@@ -687,7 +687,7 @@ async function main() {
         description: 'Global talent network that connects companies with vetted software engineers from Africa. 3,000+ engineers across 100+ countries.',
         website: 'https://andela.com', size: 'LARGE',
         location: 'Nairobi, Kenya', isVerified: true,
-        logoUrl: 'https://logo.clearbit.com/andela.com',
+        logoUrl: 'https://ui-avatars.com/api/?name=Andela+Kenya&background=192C67&color=fff&bold=true&size=200',
       },
     }),
     prisma.company.create({
@@ -696,7 +696,7 @@ async function main() {
         description: 'Africa\'s leading B2B food distribution platform. Using technology to connect farmers with food businesses, reducing waste and improving incomes.',
         website: 'https://twigafoods.com', size: 'MEDIUM',
         location: 'Nairobi, Kenya', isVerified: true,
-        logoUrl: 'https://logo.clearbit.com/twigafoods.com',
+        logoUrl: 'https://ui-avatars.com/api/?name=Twiga+Foods&background=192C67&color=fff&bold=true&size=200',
       },
     }),
   ]);
@@ -1434,21 +1434,21 @@ async function main() {
 
   // 15 companies — upsert by name (will reuse Safaricom/KCB/Andela/Twiga from above)
   const extraCompaniesData = [
-    { name: 'Safaricom PLC', industry: 'Telecommunications', size: 'LARGE' as const, location: 'Westlands, Nairobi', logo: 'https://logo.clearbit.com/safaricom.co.ke', website: 'https://safaricom.co.ke', verified: true },
-    { name: 'Equity Bank Kenya', industry: 'Banking & Finance', size: 'LARGE' as const, location: 'Upper Hill, Nairobi', logo: 'https://logo.clearbit.com/equitybank.co.ke', website: 'https://equitybank.co.ke', verified: true },
-    { name: 'Andela Kenya', industry: 'Technology', size: 'MEDIUM' as const, location: 'Kilimani, Nairobi', logo: 'https://logo.clearbit.com/andela.com', website: 'https://andela.com', verified: true },
-    { name: 'M-KOPA Solar', industry: 'Clean Energy', size: 'MEDIUM' as const, location: 'Karen, Nairobi', logo: 'https://logo.clearbit.com/m-kopa.com', website: 'https://m-kopa.com', verified: true },
-    { name: 'Twiga Foods', industry: 'Agritech', size: 'MEDIUM' as const, location: 'Industrial Area, Nairobi', logo: 'https://logo.clearbit.com/twigafoods.com', website: 'https://twiga.com', verified: true },
-    { name: 'NCBA Group', industry: 'Banking & Finance', size: 'LARGE' as const, location: 'Upperhill, Nairobi', logo: 'https://logo.clearbit.com/ncbagroup.com', website: 'https://ncbagroup.com', verified: true },
-    { name: 'Sendy Ltd', industry: 'Logistics & Delivery', size: 'SMALL' as const, location: 'Ngong Road, Nairobi', logo: 'https://logo.clearbit.com/sendy.co.ke', website: 'https://sendy.co.ke', verified: false },
+    { name: 'Safaricom PLC', industry: 'Telecommunications', size: 'LARGE' as const, location: 'Westlands, Nairobi', logo: 'https://ui-avatars.com/api/?name=Safaricom+PLC&background=192C67&color=fff&bold=true&size=200', website: 'https://safaricom.co.ke', verified: true },
+    { name: 'Equity Bank Kenya', industry: 'Banking & Finance', size: 'LARGE' as const, location: 'Upper Hill, Nairobi', logo: 'https://ui-avatars.com/api/?name=Equity+Bank+Kenya&background=192C67&color=fff&bold=true&size=200', website: 'https://equitybank.co.ke', verified: true },
+    { name: 'Andela Kenya', industry: 'Technology', size: 'MEDIUM' as const, location: 'Kilimani, Nairobi', logo: 'https://ui-avatars.com/api/?name=Andela+Kenya&background=192C67&color=fff&bold=true&size=200', website: 'https://andela.com', verified: true },
+    { name: 'M-KOPA Solar', industry: 'Clean Energy', size: 'MEDIUM' as const, location: 'Karen, Nairobi', logo: 'https://ui-avatars.com/api/?name=M-KOPA+Solar&background=192C67&color=fff&bold=true&size=200', website: 'https://m-kopa.com', verified: true },
+    { name: 'Twiga Foods', industry: 'Agritech', size: 'MEDIUM' as const, location: 'Industrial Area, Nairobi', logo: 'https://ui-avatars.com/api/?name=Twiga+Foods&background=192C67&color=fff&bold=true&size=200', website: 'https://twiga.com', verified: true },
+    { name: 'NCBA Group', industry: 'Banking & Finance', size: 'LARGE' as const, location: 'Upperhill, Nairobi', logo: 'https://ui-avatars.com/api/?name=NCBA+Group&background=192C67&color=fff&bold=true&size=200', website: 'https://ncbagroup.com', verified: true },
+    { name: 'Sendy Ltd', industry: 'Logistics & Delivery', size: 'SMALL' as const, location: 'Ngong Road, Nairobi', logo: 'https://ui-avatars.com/api/?name=Sendy+Ltd&background=192C67&color=fff&bold=true&size=200', website: 'https://sendy.co.ke', verified: false },
     { name: "Africa's Talking", industry: 'Technology', size: 'MEDIUM' as const, location: 'Westlands, Nairobi', logo: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=100&h=100&fit=crop', website: 'https://africastalking.com', verified: true },
-    { name: 'Deloitte East Africa', industry: 'Professional Services', size: 'LARGE' as const, location: 'Waiyaki Way, Nairobi', logo: 'https://logo.clearbit.com/deloitte.com', website: 'https://deloitte.com/ke', verified: true },
-    { name: 'Nation Media Group', industry: 'Media & Publishing', size: 'LARGE' as const, location: 'Nation Centre, Nairobi', logo: 'https://logo.clearbit.com/nation.africa', website: 'https://nation.africa', verified: true },
-    { name: 'Sanergy', industry: 'Sanitation & Impact', size: 'SMALL' as const, location: 'Mukuru, Nairobi', logo: 'https://logo.clearbit.com/sanergy.com', website: 'https://sanergy.com', verified: false },
-    { name: 'Jumia Kenya', industry: 'E-Commerce', size: 'MEDIUM' as const, location: 'Parklands, Nairobi', logo: 'https://logo.clearbit.com/jumia.co.ke', website: 'https://jumia.co.ke', verified: true },
-    { name: 'KCB Group', industry: 'Banking & Finance', size: 'LARGE' as const, location: 'Kencom House, Nairobi', logo: 'https://logo.clearbit.com/kcbgroup.com', website: 'https://kcbgroup.com', verified: true },
-    { name: 'Cellulant', industry: 'Fintech', size: 'MEDIUM' as const, location: 'Kilimani, Nairobi', logo: 'https://logo.clearbit.com/cellulant.io', website: 'https://cellulant.io', verified: true },
-    { name: 'Watu Credit', industry: 'Fintech', size: 'SMALL' as const, location: 'Mombasa Road, Nairobi', logo: 'https://logo.clearbit.com/watucredit.com', website: 'https://watucredit.com', verified: false },
+    { name: 'Deloitte East Africa', industry: 'Professional Services', size: 'LARGE' as const, location: 'Waiyaki Way, Nairobi', logo: 'https://ui-avatars.com/api/?name=Deloitte+East+Africa&background=192C67&color=fff&bold=true&size=200', website: 'https://deloitte.com/ke', verified: true },
+    { name: 'Nation Media Group', industry: 'Media & Publishing', size: 'LARGE' as const, location: 'Nation Centre, Nairobi', logo: 'https://ui-avatars.com/api/?name=Nation+Media+Group&background=192C67&color=fff&bold=true&size=200', website: 'https://nation.africa', verified: true },
+    { name: 'Sanergy', industry: 'Sanitation & Impact', size: 'SMALL' as const, location: 'Mukuru, Nairobi', logo: 'https://ui-avatars.com/api/?name=Sanergy&background=192C67&color=fff&bold=true&size=200', website: 'https://sanergy.com', verified: false },
+    { name: 'Jumia Kenya', industry: 'E-Commerce', size: 'MEDIUM' as const, location: 'Parklands, Nairobi', logo: 'https://ui-avatars.com/api/?name=Jumia+Kenya&background=192C67&color=fff&bold=true&size=200', website: 'https://jumia.co.ke', verified: true },
+    { name: 'KCB Group', industry: 'Banking & Finance', size: 'LARGE' as const, location: 'Kencom House, Nairobi', logo: 'https://ui-avatars.com/api/?name=KCB+Group&background=192C67&color=fff&bold=true&size=200', website: 'https://kcbgroup.com', verified: true },
+    { name: 'Cellulant', industry: 'Fintech', size: 'MEDIUM' as const, location: 'Kilimani, Nairobi', logo: 'https://ui-avatars.com/api/?name=Cellulant&background=192C67&color=fff&bold=true&size=200', website: 'https://cellulant.io', verified: true },
+    { name: 'Watu Credit', industry: 'Fintech', size: 'SMALL' as const, location: 'Mombasa Road, Nairobi', logo: 'https://ui-avatars.com/api/?name=Watu+Credit&background=192C67&color=fff&bold=true&size=200', website: 'https://watucredit.com', verified: false },
   ];
 
   const extraCompanies: any[] = [];
@@ -1658,7 +1658,7 @@ async function main() {
     const created = await prisma.company.create({
       data: {
         name: c.name, industry: c.industry, size: c.size, location: c.location,
-        logoUrl: `https://logo.clearbit.com/${c.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}`,
+        logoUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}&background=192C67&color=fff&bold=true&size=200`,
         website: c.website, isVerified: c.verified, description: c.desc,
       },
     });

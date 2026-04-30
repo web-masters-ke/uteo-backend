@@ -1768,6 +1768,7 @@ enum ApplicationStatus {
   INTERVIEW
   HIRED
   REJECTED
+  WITHDRAWN
 }
 
 enum CompanySize {

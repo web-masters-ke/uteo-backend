@@ -52,6 +52,8 @@ import { CompaniesModule } from './modules/companies/companies.module';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { ApplicationsModule } from './modules/applications/applications.module';
 import { TasksModule } from './modules/tasks/tasks.module';
+import { OffersModule } from './modules/offers/offers.module';
+import { SupportModule } from './modules/support/support.module';
 import { FeedModule } from './modules/feed/feed.module';
 import { ProfileModule } from './modules/profile/profile.module';
 import { AiModule } from './modules/ai/ai.module';
@@ -103,6 +105,8 @@ import { AiModule } from './modules/ai/ai.module';
     JobsModule,
     ApplicationsModule,
     TasksModule,
+    OffersModule,
+    SupportModule,
     FeedModule,
     ProfileModule,
     AiModule,

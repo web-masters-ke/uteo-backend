@@ -384,8 +384,12 @@ model User {
   userSkills       UserSkill[]
 
   // Hiring tasks
-  assignedTasks Task[] @relation("TaskAssignee")
-  createdTasks  Task[] @relation("TaskCreator")
+  assignedTasks  Task[]        @relation("TaskAssignee")
+  createdTasks   Task[]        @relation("TaskCreator")
+  offersReceived OfferLetter[] @relation("OfferCandidate")
+  offersCreated  OfferLetter[] @relation("OfferCreator")
+  supportTickets SupportTicket[] @relation("SupportTicketUser")
+  supportReplies SupportTicketReply[] @relation("SupportTicketAuthor")
 
   @@index([role])
   @@index([status])
@@ -1780,32 +1784,42 @@ enum CompanySize {
 }
 
 model Company {
-  id          String      @id @default(cuid())
+  id          String        @id @default(cuid())
   name        String
   description String?
   industry    String?
   website     String?
   logoUrl     String?
-  size        CompanySize @default(STARTUP)
+  size        CompanySize   @default(STARTUP)
   location    String?
-  isVerified  Boolean     @default(false)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  isVerified  Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
   recruiters  Recruiter[]
   jobs        Job[]
   tasks       Task[]
+  offers      OfferLetter[]
 }
 
 model Recruiter {
-  id        String   @id @default(cuid())
+  id        String         @id @default(cuid())
   userId    String
   companyId String
   title     String?
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
-  company   Company  @relation(fields: [companyId], references: [id])
+  role      RecruiterRole  @default(HIRING_MANAGER)
+  createdAt DateTime       @default(now())
+  user      User           @relation(fields: [userId], references: [id])
+  company   Company        @relation(fields: [companyId], references: [id])
 
   @@unique([userId, companyId])
+}
+
+enum RecruiterRole {
+  OWNER
+  ADMIN
+  HIRING_MANAGER
+  REVIEWER
+  VIEWER
 }
 
 model Job {
@@ -1833,6 +1847,7 @@ model Job {
   applications Application[]
   savedJobs    SavedJob[]
   tasks        Task[]
+  offers       OfferLetter[]
 }
 
 model JobSkill {
@@ -1871,8 +1886,68 @@ model Application {
   user        User              @relation(fields: [userId], references: [id])
   job         Job               @relation(fields: [jobId], references: [id])
   tasks       Task[]
+  offer       OfferLetter?
 
   @@unique([userId, jobId])
+}
+
+// ── Offer letters with electronic signature ───────────────────────────────
+// Recruiter composes → candidate signs with typed name + drawn signature image.
+// We capture name + sig + timestamp + IP + UA for an eIDAS-equivalent e-signature.
+
+model OfferLetter {
+  id            String      @id @default(cuid())
+  applicationId String      @unique
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  jobId         String
+  job           Job         @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  companyId     String
+  company       Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  candidateId   String
+  candidate     User        @relation("OfferCandidate", fields: [candidateId], references: [id])
+  createdById   String
+  createdBy     User        @relation("OfferCreator", fields: [createdById], references: [id])
+
+  title          String
+  bodyHtml       String
+  termsHtml      String?
+  salaryAmount   Float?
+  salaryCurrency String    @default("KES")
+  salaryPeriod   String    @default("MONTHLY")
+  startDate      DateTime?
+  benefits       String?
+
+  status    OfferStatus @default(DRAFT)
+  expiresAt DateTime?
+
+  sentAt     DateTime?
+  viewedAt   DateTime?
+  signedAt   DateTime?
+  declinedAt DateTime?
+  revokedAt  DateTime?
+
+  signatureName      String?
+  signatureDataUrl   String?
+  signatureIpAddress String?
+  signatureUserAgent String?
+  declineReason      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([candidateId, status])
+  @@index([companyId, status])
+  @@index([jobId])
+}
+
+enum OfferStatus {
+  DRAFT
+  SENT
+  VIEWED
+  SIGNED
+  DECLINED
+  REVOKED
+  EXPIRED
 }
 
 model JobInteraction {
@@ -1952,4 +2027,51 @@ model UserSkill {
 
   @@unique([userId, skillId])
   @@index([userId])
+}
+
+enum SupportPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum SupportStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING_USER
+  RESOLVED
+  CLOSED
+}
+
+model SupportTicket {
+  id          String          @id @default(cuid())
+  userId      String
+  subject     String
+  description String?
+  category    String?
+  priority    SupportPriority @default(MEDIUM)
+  status      SupportStatus   @default(OPEN)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  closedAt    DateTime?
+
+  user    User                  @relation("SupportTicketUser", fields: [userId], references: [id], onDelete: Cascade)
+  replies SupportTicketReply[]
+
+  @@index([userId, createdAt])
+  @@index([status])
+}
+
+model SupportTicketReply {
+  id        String   @id @default(cuid())
+  ticketId  String
+  authorId  String
+  body      String
+  isStaff   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author User          @relation("SupportTicketAuthor", fields: [authorId], references: [id])
+
+  @@index([ticketId, createdAt])
 }

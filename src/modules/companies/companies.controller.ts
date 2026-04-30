@@ -14,6 +14,7 @@ import {
   UpdateCompanyDto,
   ListCompaniesDto,
   AddRecruiterDto,
+  UpdateRecruiterDto,
 } from './dto/companies.dto';
 import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser, JwtUser } from '../../common/decorators/current-user.decorator';
@@ -60,6 +61,16 @@ export class CompaniesController {
     @Body() dto: AddRecruiterDto,
   ) {
     return this.svc.addRecruiter(id, user.id, dto, user.role);
+  }
+
+  @Patch(':id/recruiters/:userId')
+  updateRecruiter(
+    @Param('id') id: string,
+    @Param('userId') targetUserId: string,
+    @CurrentUser() user: JwtUser,
+    @Body() dto: UpdateRecruiterDto,
+  ) {
+    return this.svc.updateRecruiter(id, targetUserId, user.id, dto, user.role);
   }
 
   @Delete(':id/recruiters/:userId')

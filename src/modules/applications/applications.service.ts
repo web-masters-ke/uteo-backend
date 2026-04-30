@@ -353,24 +353,24 @@ export class ApplicationsService {
     // Email + chat message for key transitions
     const statusMessages: Record<string, { subject: string; html: string; chat: string }> = {
       HIRED: {
-        subject: `Congratulations! You've been hired — ${jobTitle}`,
-        html: `<p>Hi ${firstName},</p><p>We are thrilled to inform you that you have been <strong>selected and hired</strong> for the <strong>${jobTitle}</strong> position at <strong>${companyName}</strong>.</p><p>Our team will be reaching out shortly with your onboarding details. Welcome aboard!</p><p>Best regards,<br/>${companyName}</p>`,
-        chat: `🎉 Congratulations ${firstName}! You have been <b>hired</b> for the ${jobTitle} role at ${companyName}. Welcome to the team! Our team will reach out shortly with onboarding details.`,
+        subject: `Congratulations, you have been hired for the ${jobTitle} role`,
+        html: `<p>Hi ${firstName},</p><p>We are pleased to confirm that you have been selected for the <strong>${jobTitle}</strong> position at <strong>${companyName}</strong>.</p><p>Our team will reach out shortly with your offer letter and onboarding details.</p><p>Welcome to the team.</p><p>Sincerely,<br/>${companyName}</p>`,
+        chat: `Hi ${firstName}, congratulations. You have been hired for the ${jobTitle} role at ${companyName}. We will follow up shortly with your offer letter and onboarding details. Welcome to the team.`,
       },
       OFFER: {
-        subject: `Job Offer — ${jobTitle} at ${companyName}`,
-        html: `<p>Hi ${firstName},</p><p>We are pleased to extend an <strong>offer of employment</strong> for the <strong>${jobTitle}</strong> position at <strong>${companyName}</strong>.</p><p>Please respond to confirm your acceptance. We look forward to welcoming you to the team!</p><p>Best regards,<br/>${companyName}</p>`,
-        chat: `🎉 Hi ${firstName}! We are happy to extend an <b>offer</b> for the ${jobTitle} role at ${companyName}. Please confirm your acceptance at your earliest convenience.`,
+        subject: `Offer of employment for the ${jobTitle} role at ${companyName}`,
+        html: `<p>Hi ${firstName},</p><p>We are pleased to extend an <strong>offer of employment</strong> for the <strong>${jobTitle}</strong> position at <strong>${companyName}</strong>.</p><p>Please review the offer at your earliest convenience and let us know if you have any questions.</p><p>Sincerely,<br/>${companyName}</p>`,
+        chat: `Hi ${firstName}, we have extended an offer of employment for the ${jobTitle} role at ${companyName}. Please review the offer in your account at your earliest convenience.`,
       },
       INTERVIEW: {
-        subject: `Interview Invitation — ${jobTitle} at ${companyName}`,
-        html: `<p>Hi ${firstName},</p><p>Congratulations! You have been <strong>shortlisted for an interview</strong> for the <strong>${jobTitle}</strong> position at <strong>${companyName}</strong>.</p><p>Our team will be in touch to confirm the schedule. Prepare well — we are excited to meet you!</p><p>Best regards,<br/>${companyName}</p>`,
-        chat: `👋 Hi ${firstName}! You've been shortlisted for an <b>interview</b> for the ${jobTitle} role at ${companyName}. We'll share schedule details shortly. Good luck!`,
+        subject: `Interview invitation for the ${jobTitle} role`,
+        html: `<p>Hi ${firstName},</p><p>You have been invited to interview for the <strong>${jobTitle}</strong> position at <strong>${companyName}</strong>. Our team will follow up shortly with the proposed schedule.</p><p>Sincerely,<br/>${companyName}</p>`,
+        chat: `Hi ${firstName}, you have been invited to interview for the ${jobTitle} role at ${companyName}. We will share the schedule details shortly.`,
       },
       SHORTLISTED: {
-        subject: `You've been shortlisted — ${jobTitle}`,
-        html: `<p>Hi ${firstName},</p><p>Great news! Your application for <strong>${jobTitle}</strong> at <strong>${companyName}</strong> has been <strong>shortlisted</strong>.</p><p>We will be in touch with next steps soon.</p><p>Best regards,<br/>${companyName}</p>`,
-        chat: `✅ Hi ${firstName}! Your application for ${jobTitle} at ${companyName} has been <b>shortlisted</b>. We'll be in touch with next steps soon.`,
+        subject: `Your application has been shortlisted for the ${jobTitle} role`,
+        html: `<p>Hi ${firstName},</p><p>Your application for <strong>${jobTitle}</strong> at <strong>${companyName}</strong> has been <strong>shortlisted</strong>. We will be in touch with next steps soon.</p><p>Sincerely,<br/>${companyName}</p>`,
+        chat: `Hi ${firstName}, your application for ${jobTitle} at ${companyName} has been shortlisted. We will be in touch with next steps soon.`,
       },
       REJECTED: {
         subject: `Application Update — ${jobTitle}`,

@@ -3,10 +3,11 @@ import {
   IsOptional,
   IsEnum,
   IsBoolean,
+  IsEmail,
   MaxLength,
   IsNotEmpty,
 } from 'class-validator';
-import { CompanySize } from '@prisma/client';
+import { CompanySize, RecruiterRole } from '@prisma/client';
 import { PaginationDto } from '../../../common/dto/pagination.dto';
 
 export class CreateCompanyDto {
@@ -103,12 +104,31 @@ export class ListCompaniesDto extends PaginationDto {
 }
 
 export class AddRecruiterDto {
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  userId: string;
+  userId?: string;
+
+  @IsOptional()
+  @IsEmail()
+  email?: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(100)
   title?: string;
+
+  @IsOptional()
+  @IsEnum(RecruiterRole)
+  role?: RecruiterRole;
+}
+
+export class UpdateRecruiterDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  title?: string;
+
+  @IsOptional()
+  @IsEnum(RecruiterRole)
+  role?: RecruiterRole;
 }

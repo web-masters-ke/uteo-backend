@@ -11,6 +11,7 @@ import {
   UpdateCompanyDto,
   ListCompaniesDto,
   AddRecruiterDto,
+  UpdateRecruiterDto,
 } from './dto/companies.dto';
 import { Prisma } from '@prisma/client';
 
@@ -31,7 +32,7 @@ export class CompaniesService {
         size: dto.size,
         location: dto.location,
         recruiters: {
-          create: { userId: recruiterUserId, title: undefined },
+          create: { userId: recruiterUserId, title: undefined, role: 'OWNER' },
         },
       },
       include: { recruiters: { include: { user: { select: { id: true, email: true, firstName: true, lastName: true } } } } },
@@ -75,6 +76,7 @@ export class CompaniesService {
           include: {
             user: { select: { id: true, email: true, firstName: true, lastName: true, avatar: true } },
           },
+          orderBy: { createdAt: 'asc' },
         },
       },
     });
@@ -89,6 +91,7 @@ export class CompaniesService {
           include: {
             user: { select: { id: true, email: true, firstName: true, lastName: true, avatar: true } },
           },
+          orderBy: { createdAt: 'asc' },
         },
       },
     });
@@ -114,29 +117,89 @@ export class CompaniesService {
   }
 
   async addRecruiter(companyId: string, requesterId: string, dto: AddRecruiterDto, requesterRole?: string) {
-    await this.assertRecruiter(companyId, requesterId, requesterRole);
-    const user = await this.prisma.user.findUnique({ where: { id: dto.userId } });
-    if (!user) throw new NotFoundException('User not found');
+    const requester = await this.assertRecruiterWithRecord(companyId, requesterId, requesterRole);
+    // Only OWNER, ADMIN (or platform admin) can add team members
+    if (requester && !['OWNER', 'ADMIN'].includes(requester.role)) {
+      throw new ForbiddenException('Only owners and admins can add team members');
+    }
+
+    let user: { id: string; email: string | null } | null = null;
+    if (dto.userId) {
+      user = await this.prisma.user.findUnique({ where: { id: dto.userId }, select: { id: true, email: true } });
+    } else if (dto.email) {
+      user = await this.prisma.user.findUnique({ where: { email: dto.email.toLowerCase().trim() }, select: { id: true, email: true } });
+    } else {
+      throw new ConflictException('Provide either userId or email');
+    }
+    if (!user) throw new NotFoundException(`No Uteo user with that email. Ask them to sign up first, then invite.`);
+
     const existing = await this.prisma.recruiter.findUnique({
-      where: { userId_companyId: { userId: dto.userId, companyId } },
+      where: { userId_companyId: { userId: user.id, companyId } },
     });
-    if (existing) throw new ConflictException('User is already a recruiter for this company');
+    if (existing) throw new ConflictException('User is already a team member for this company');
+
+    // Only OWNER can create another OWNER
+    let role = dto.role ?? 'HIRING_MANAGER';
+    if (role === 'OWNER' && requester?.role !== 'OWNER') {
+      throw new ForbiddenException('Only the company owner can grant OWNER role');
+    }
+
     return this.prisma.recruiter.create({
-      data: { userId: dto.userId, companyId, title: dto.title },
-      include: { user: { select: { id: true, email: true, firstName: true, lastName: true } } },
+      data: { userId: user.id, companyId, title: dto.title, role: role as any },
+      include: { user: { select: { id: true, email: true, firstName: true, lastName: true, avatar: true } } },
+    });
+  }
+
+  async updateRecruiter(companyId: string, targetUserId: string, requesterId: string, dto: UpdateRecruiterDto, requesterRole?: string) {
+    const requester = await this.assertRecruiterWithRecord(companyId, requesterId, requesterRole);
+    if (requester && !['OWNER', 'ADMIN'].includes(requester.role)) {
+      throw new ForbiddenException('Only owners and admins can change team roles');
+    }
+    const target = await this.prisma.recruiter.findUnique({
+      where: { userId_companyId: { userId: targetUserId, companyId } },
+    });
+    if (!target) throw new NotFoundException('Team member not found');
+    // Don't let an ADMIN demote the OWNER
+    if (target.role === 'OWNER' && requester?.role !== 'OWNER') {
+      throw new ForbiddenException('Only the owner can change their own role');
+    }
+    if (dto.role === 'OWNER' && requester?.role !== 'OWNER') {
+      throw new ForbiddenException('Only the company owner can grant OWNER role');
+    }
+    return this.prisma.recruiter.update({
+      where: { userId_companyId: { userId: targetUserId, companyId } },
+      data: { title: dto.title ?? target.title, role: (dto.role ?? target.role) as any },
+      include: { user: { select: { id: true, email: true, firstName: true, lastName: true, avatar: true } } },
     });
   }
 
   async removeRecruiter(companyId: string, requesterId: string, targetUserId: string, requesterRole?: string) {
-    await this.assertRecruiter(companyId, requesterId, requesterRole);
+    const requester = await this.assertRecruiterWithRecord(companyId, requesterId, requesterRole);
+    if (requester && !['OWNER', 'ADMIN'].includes(requester.role) && requesterId !== targetUserId) {
+      throw new ForbiddenException('Only owners and admins can remove team members');
+    }
     const recruiter = await this.prisma.recruiter.findUnique({
       where: { userId_companyId: { userId: targetUserId, companyId } },
     });
     if (!recruiter) throw new NotFoundException('Recruiter not found');
+    if (recruiter.role === 'OWNER') {
+      throw new ForbiddenException('The owner cannot be removed');
+    }
     await this.prisma.recruiter.delete({
       where: { userId_companyId: { userId: targetUserId, companyId } },
     });
-    return { message: 'Recruiter removed' };
+    return { message: 'Team member removed' };
+  }
+
+  private async assertRecruiterWithRecord(companyId: string, userId: string, userRole?: string) {
+    const company = await this.prisma.company.findUnique({ where: { id: companyId } });
+    if (!company) throw new NotFoundException('Company not found');
+    const isAdmin = userRole === 'ADMIN' || userRole === 'SUPER_ADMIN' || userRole === 'FINANCE_ADMIN';
+    const rec = await this.prisma.recruiter.findUnique({
+      where: { userId_companyId: { userId, companyId } },
+    });
+    if (!rec && !isAdmin) throw new ForbiddenException('You are not a member of this company');
+    return rec;
   }
 
   // ── helpers ──────────────────────────────────────────────────────────────

@@ -1784,21 +1784,27 @@ enum CompanySize {
 }
 
 model Company {
-  id          String        @id @default(cuid())
-  name        String
-  description String?
-  industry    String?
-  website     String?
-  logoUrl     String?
-  size        CompanySize   @default(STARTUP)
-  location    String?
-  isVerified  Boolean       @default(false)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  recruiters  Recruiter[]
-  jobs        Job[]
-  tasks       Task[]
-  offers      OfferLetter[]
+  id              String        @id @default(cuid())
+  name            String
+  description     String?
+  industry        String?
+  website         String?
+  logoUrl         String?
+  size            CompanySize   @default(STARTUP)
+  location        String?
+  isVerified      Boolean       @default(false)
+  // Social handles for recruiter share flow — pre-fills "@WebMasters is hiring" when posting
+  linkedinHandle  String?       // e.g. "webmasters" — appended to https://linkedin.com/company/
+  linkedinPageUrl String?       // full LinkedIn company page URL (alternative to handle)
+  twitterHandle   String?       // e.g. "@webmasters" or "webmasters"
+  facebookPageUrl String?
+  instagramHandle String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  recruiters      Recruiter[]
+  jobs            Job[]
+  tasks           Task[]
+  offers          OfferLetter[]
 }
 
 model Recruiter {

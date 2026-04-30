@@ -46,7 +46,13 @@ export class JobsService {
           : undefined,
       },
       include: {
-        company: { select: { id: true, name: true, logoUrl: true } },
+        company: {
+          select: {
+            id: true, name: true, logoUrl: true,
+            linkedinHandle: true, linkedinPageUrl: true,
+            twitterHandle: true, facebookPageUrl: true, instagramHandle: true,
+          },
+        },
         jobSkills: { include: { skill: { select: { id: true, name: true } } } },
         _count: { select: { applications: true } },
       },

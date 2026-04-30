@@ -31,6 +31,11 @@ export class CompaniesService {
         logoUrl: dto.logoUrl,
         size: dto.size,
         location: dto.location,
+        linkedinHandle: dto.linkedinHandle,
+        linkedinPageUrl: dto.linkedinPageUrl,
+        twitterHandle: dto.twitterHandle,
+        facebookPageUrl: dto.facebookPageUrl,
+        instagramHandle: dto.instagramHandle,
         recruiters: {
           create: { userId: recruiterUserId, title: undefined, role: 'OWNER' },
         },
@@ -112,6 +117,11 @@ export class CompaniesService {
         size: dto.size,
         location: dto.location,
         isVerified: dto.isVerified,
+        linkedinHandle: dto.linkedinHandle,
+        linkedinPageUrl: dto.linkedinPageUrl,
+        twitterHandle: dto.twitterHandle,
+        facebookPageUrl: dto.facebookPageUrl,
+        instagramHandle: dto.instagramHandle,
       },
     });
   }

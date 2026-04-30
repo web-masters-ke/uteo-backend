@@ -47,6 +47,12 @@ export class CreateCompanyDto {
   @IsString()
   @MaxLength(200)
   location?: string;
+
+  @IsOptional() @IsString() @MaxLength(100) linkedinHandle?: string;
+  @IsOptional() @IsString() @MaxLength(500) linkedinPageUrl?: string;
+  @IsOptional() @IsString() @MaxLength(100) twitterHandle?: string;
+  @IsOptional() @IsString() @MaxLength(500) facebookPageUrl?: string;
+  @IsOptional() @IsString() @MaxLength(100) instagramHandle?: string;
 }
 
 export class UpdateCompanyDto {
@@ -87,6 +93,12 @@ export class UpdateCompanyDto {
   @IsOptional()
   @IsBoolean()
   isVerified?: boolean;
+
+  @IsOptional() @IsString() @MaxLength(100) linkedinHandle?: string;
+  @IsOptional() @IsString() @MaxLength(500) linkedinPageUrl?: string;
+  @IsOptional() @IsString() @MaxLength(100) twitterHandle?: string;
+  @IsOptional() @IsString() @MaxLength(500) facebookPageUrl?: string;
+  @IsOptional() @IsString() @MaxLength(100) instagramHandle?: string;
 }
 
 export class ListCompaniesDto extends PaginationDto {

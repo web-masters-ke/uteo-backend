@@ -319,6 +319,19 @@ export class ApplicationsService {
       .onApplicationStatusChange(id, dto.status as any, userId)
       .catch(() => null);
 
+    // ── Post-hire orchestration ────────────────────────────────────────
+    // When status flips to HIRED, do the rest of the lifecycle:
+    //   1. Increment hired count → close the job if all vacancies are filled
+    //   2. Auto-withdraw candidate's other active applications
+    //   3. Add the candidate to the company's team
+    //   4. Auto-create onboarding tasks for the recruiter
+    if (dto.status === 'HIRED') {
+      this.runPostHireFlow(application, userId).catch((err) => {
+        // Best-effort: never fail the status update because of post-hire
+        console.error('[post-hire] failed:', err instanceof Error ? err.message : err);
+      });
+    }
+
     const applicant = application.user;
     const jobTitle = application.job.title;
     const companyName = application.job.company?.name ?? 'the company';
@@ -431,5 +444,112 @@ export class ApplicationsService {
     ).catch(() => null);
 
     return { message: 'Application withdrawn' };
+  }
+
+  // ── Post-hire orchestration ───────────────────────────────────────────────
+  // Called when an application transitions to HIRED. Best-effort — logs and continues
+  // on partial failure so a missing FK or already-existing team-member doesn't roll
+  // back the original status update.
+  private async runPostHireFlow(
+    application: {
+      id: string;
+      userId: string;
+      job: {
+        id: string;
+        companyId: string;
+        title: string;
+        postedById: string;
+        company?: { name: string } | null;
+      };
+      user: { id: string; email: string | null; firstName: string | null; lastName: string | null };
+    },
+    actorId: string,
+  ) {
+    const job = application.job;
+    const candidateId = application.userId;
+    const candidateName = `${application.user.firstName ?? ''} ${application.user.lastName ?? ''}`.trim() || application.user.email || 'New hire';
+
+    // 1. Close the job if all vacancies are filled
+    try {
+      const jobRecord = await this.prisma.job.findUnique({
+        where: { id: job.id },
+        select: { vacancies: true, status: true },
+      });
+      const vacancies = jobRecord?.vacancies ?? 1;
+      const hiredCount = await this.prisma.application.count({
+        where: { jobId: job.id, status: 'HIRED' as any },
+      });
+      if (hiredCount >= vacancies && jobRecord?.status === 'ACTIVE') {
+        await this.prisma.job.update({
+          where: { id: job.id },
+          data: { status: 'CLOSED' as any },
+        });
+      }
+    } catch (e) {
+      console.error('[post-hire] close-job:', e);
+    }
+
+    // 2. Auto-withdraw candidate's other active applications
+    try {
+      await this.prisma.application.updateMany({
+        where: {
+          userId: candidateId,
+          id: { not: application.id },
+          status: { in: ['SUBMITTED', 'REVIEWED', 'SHORTLISTED', 'INTERVIEW'] as any[] },
+        },
+        data: { status: 'WITHDRAWN' as any, notes: `Auto-withdrawn — hired at ${job.company?.name ?? 'another company'} for ${job.title}.` },
+      });
+    } catch (e) {
+      console.error('[post-hire] withdraw-others:', e);
+    }
+
+    // 3. Add the candidate to the company's team
+    //    TeamMember.firmId references a User (the firm owner). Use the job's poster as the firm anchor.
+    try {
+      const exists = await this.prisma.teamMember.findFirst({
+        where: { firmId: job.postedById, userId: candidateId, isActive: true },
+      });
+      if (!exists) {
+        await this.prisma.teamMember.create({
+          data: {
+            firmId: job.postedById,
+            userId: candidateId,
+            invitedById: actorId,
+            isActive: true,
+            joinedAt: new Date(),
+            role: 'CONSULTANT' as any,
+            title: job.title,
+          },
+        });
+      }
+    } catch (e) {
+      console.error('[post-hire] add-team-member:', e);
+    }
+
+    // 4. Auto-create onboarding tasks for the recruiter
+    try {
+      const onboarding = [
+        { title: `Send signed offer letter — ${candidateName}`, type: 'OFFER_SEND', priority: 'URGENT', daysFromNow: 1 },
+        { title: `Add ${candidateName} to payroll`, type: 'ONBOARD', priority: 'HIGH', daysFromNow: 3 },
+        { title: `Order equipment for ${candidateName}`, type: 'ONBOARD', priority: 'HIGH', daysFromNow: 5 },
+        { title: `Schedule onboarding call with ${candidateName}`, type: 'ONBOARD', priority: 'MEDIUM', daysFromNow: 2 },
+      ];
+      await this.prisma.task.createMany({
+        data: onboarding.map((t) => ({
+          type: t.type as any,
+          title: t.title,
+          description: `Auto-created on hire for "${job.title}".`,
+          priority: t.priority as any,
+          dueDate: new Date(Date.now() + t.daysFromNow * 86400_000),
+          jobId: job.id,
+          applicationId: application.id,
+          companyId: job.companyId,
+          assignedToId: job.postedById,
+          createdById: actorId,
+        })),
+      });
+    } catch (e) {
+      console.error('[post-hire] onboarding-tasks:', e);
+    }
   }
 }

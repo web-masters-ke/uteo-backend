@@ -1816,6 +1816,7 @@ model Job {
   description  String
   requirements String?
   posterUrl    String?
+  vacancies    Int           @default(1)
   location     String?
   jobType      JobType       @default(FULL_TIME)
   salaryMin    Float?

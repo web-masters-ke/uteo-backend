@@ -54,6 +54,10 @@ export class CreateJobDto {
 
   @IsOptional()
   @IsString()
+  posterUrl?: string;
+
+  @IsOptional()
+  @IsString()
   @MaxLength(200)
   location?: string;
 
@@ -111,6 +115,10 @@ export class UpdateJobDto {
   @IsOptional()
   @IsString()
   requirements?: string;
+
+  @IsOptional()
+  @IsString()
+  posterUrl?: string;
 
   @IsOptional()
   @IsString()

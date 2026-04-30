@@ -9,7 +9,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { JobsService } from './jobs.service';
-import { CreateJobDto, UpdateJobDto, JobFilterDto, InteractJobDto } from './dto/jobs.dto';
+import { CreateJobDto, UpdateJobDto, JobFilterDto, InteractJobDto, BulkCloseDto, BulkCreateDto } from './dto/jobs.dto';
 import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser, JwtUser } from '../../common/decorators/current-user.decorator';
 
@@ -20,6 +20,17 @@ export class JobsController {
   @Post()
   create(@CurrentUser() user: JwtUser, @Body() dto: CreateJobDto) {
     return this.svc.create(user.id, dto, user.role);
+  }
+
+  // Must come before :id routes to avoid param collision
+  @Post('bulk-close')
+  bulkClose(@Body() dto: BulkCloseDto, @CurrentUser() user: JwtUser) {
+    return this.svc.bulkClose(dto.ids, user.id, user.role);
+  }
+
+  @Post('bulk')
+  bulkCreate(@Body() dto: BulkCreateDto, @CurrentUser() user: JwtUser) {
+    return this.svc.bulkCreate(dto.jobs, user.id, user.role);
   }
 
   @Public()

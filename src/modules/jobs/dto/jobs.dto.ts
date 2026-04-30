@@ -230,3 +230,16 @@ export class InteractJobDto {
   @IsNotEmpty()
   action: string; // view | click | save | apply | skip
 }
+
+export class BulkCloseDto {
+  @IsArray()
+  @IsString({ each: true })
+  ids: string[];
+}
+
+export class BulkCreateDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @CvType(() => CreateJobDto)
+  jobs: CreateJobDto[];
+}

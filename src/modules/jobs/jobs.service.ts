@@ -14,6 +14,7 @@ import {
   JobFilterDto,
   InteractJobDto,
 } from './dto/jobs.dto';
+// CreateJobDto re-used in bulkCreate
 
 const VALID_ACTIONS = ['view', 'click', 'save', 'apply', 'skip'];
 
@@ -433,5 +434,33 @@ export class JobsService {
     return this.prisma.jobInteraction.create({
       data: { jobId, userId, action: dto.action },
     });
+  }
+
+  async bulkClose(ids: string[], userId: string, userRole: string) {
+    let closed = 0;
+    const skipped: string[] = [];
+    for (const id of ids) {
+      try {
+        await this.remove(id, userId, userRole);
+        closed++;
+      } catch {
+        skipped.push(id);
+      }
+    }
+    return { closed, skipped: skipped.length };
+  }
+
+  async bulkCreate(jobs: CreateJobDto[], userId: string, userRole: string) {
+    let created = 0;
+    const failed: { index: number; error: string }[] = [];
+    for (let i = 0; i < jobs.length; i++) {
+      try {
+        await this.create(userId, jobs[i], userRole);
+        created++;
+      } catch (e: any) {
+        failed.push({ index: i, error: e?.message ?? 'Unknown error' });
+      }
+    }
+    return { created, failed };
   }
 }

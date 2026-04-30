@@ -51,6 +51,7 @@ export class S3Service {
     originalName: string,
     mimeType: string,
     folder: string = 'uploads',
+    isPublic = false,
   ): Promise<{ key: string; url: string }> {
     const ext = originalName.split('.').pop() || 'bin';
     const key = `${this.prefix}${folder}/${uuid()}.${ext}`;
@@ -61,7 +62,8 @@ export class S3Service {
         Key: key,
         Body: file,
         ContentType: mimeType,
-      }),
+        ...(isPublic ? { ACL: 'public-read' } : {}),
+      } as any),
     );
 
     this.logger.log(`Uploaded ${key} to S3`);

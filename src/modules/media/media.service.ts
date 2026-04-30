@@ -10,7 +10,11 @@ export class MediaService {
   private readonly logger = new Logger(MediaService.name);
   constructor(private readonly s3: S3Service) {}
 
+  // Folders whose objects should be publicly readable (company branding, covers)
+  private static PUBLIC_FOLDERS = ['company-logos', 'avatars', 'cover-images'];
+
   async upload(file: Express.Multer.File, folder = 'uploads') {
+    const isPublic = MediaService.PUBLIC_FOLDERS.some((f) => folder.startsWith(f));
     if (!file) throw new BadRequestException('No file provided');
     if (!ALLOWED.includes(file.mimetype)) throw new BadRequestException(`File type ${file.mimetype} not allowed`);
     if (file.size > MAX_SIZE) throw new BadRequestException('File too large (max 500MB)');
@@ -35,7 +39,7 @@ export class MediaService {
     }
 
     try {
-      const result = await this.s3.upload(fileData, file.originalname, file.mimetype, folder);
+      const result = await this.s3.upload(fileData, file.originalname, file.mimetype, folder, isPublic);
       this.logger.log(`Uploaded ${file.originalname} to S3: ${result.url}`);
       return { key: result.key, url: result.url, originalName: file.originalname, mimeType: file.mimetype, size: file.size };
     } catch (err: any) {

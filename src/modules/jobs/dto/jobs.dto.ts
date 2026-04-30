@@ -4,6 +4,7 @@ import {
   IsEnum,
   IsNumber,
   IsArray,
+  IsBoolean,
   IsNotEmpty,
   MaxLength,
   IsDateString,
@@ -58,6 +59,10 @@ export class CreateJobDto {
 
   @IsOptional()
   vacancies?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  showSalary?: boolean;
 
   @IsOptional()
   @IsString()
@@ -125,6 +130,10 @@ export class UpdateJobDto {
 
   @IsOptional()
   vacancies?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  showSalary?: boolean;
 
   @IsOptional()
   @IsString()

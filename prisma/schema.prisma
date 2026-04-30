@@ -1790,6 +1790,7 @@ model Company {
   industry        String?
   website         String?
   logoUrl         String?
+  coverImageUrl   String?
   size            CompanySize   @default(STARTUP)
   location        String?
   isVerified      Boolean       @default(false)

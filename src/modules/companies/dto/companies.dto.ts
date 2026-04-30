@@ -40,6 +40,10 @@ export class CreateCompanyDto {
   logoUrl?: string;
 
   @IsOptional()
+  @IsString()
+  coverImageUrl?: string;
+
+  @IsOptional()
   @IsEnum(CompanySize)
   size?: CompanySize;
 
@@ -80,6 +84,10 @@ export class UpdateCompanyDto {
   @IsOptional()
   @IsString()
   logoUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  coverImageUrl?: string;
 
   @IsOptional()
   @IsEnum(CompanySize)

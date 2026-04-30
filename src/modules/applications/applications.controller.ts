@@ -50,6 +50,15 @@ export class ApplicationsController {
     return this.svc.updateStatus(id, user.id, dto, user.role);
   }
 
+  @Patch(':id/resume')
+  updateResume(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtUser,
+    @Body() body: { resumeUrl: string },
+  ) {
+    return this.svc.updateResume(id, user.id, body?.resumeUrl);
+  }
+
   @Delete(':id')
   withdraw(@Param('id') id: string, @CurrentUser() user: JwtUser) {
     return this.svc.withdraw(id, user.id, user.role);

@@ -422,6 +422,39 @@ export class ApplicationsService {
     });
   }
 
+  async updateResume(id: string, userId: string, resumeUrl?: string) {
+    if (!resumeUrl || typeof resumeUrl !== 'string') {
+      throw new BadRequestException('resumeUrl is required');
+    }
+    const application = await this.prisma.application.findUnique({
+      where: { id },
+      include: { job: { select: { id: true, title: true, postedById: true, company: { select: { name: true } } } } },
+    });
+    if (!application) throw new NotFoundException('Application not found');
+    if (application.userId !== userId) {
+      throw new ForbiddenException('You can only update your own application');
+    }
+    const lockedStatuses: string[] = ['HIRED', 'REJECTED', 'WITHDRAWN'];
+    if (lockedStatuses.includes(application.status as any)) {
+      throw new BadRequestException(`Resume can no longer be updated — application is ${application.status}.`);
+    }
+    const updated = await this.prisma.application.update({
+      where: { id },
+      data: { resumeUrl },
+    });
+
+    // Let the recruiter know the candidate refreshed their resume
+    this.notifications.createInApp(
+      application.job.postedById,
+      'APPLICATION_RESUME_UPDATED',
+      'Resume updated',
+      `An applicant updated their resume for "${application.job.title}".`,
+      { applicationId: id, jobId: application.job.id, jobTitle: application.job.title },
+    ).catch(() => null);
+
+    return updated;
+  }
+
   async withdraw(id: string, userId: string, userRole?: string) {
     const application = await this.prisma.application.findUnique({
       where: { id },

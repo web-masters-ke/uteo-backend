@@ -18,15 +18,32 @@ export class S3Service {
   private readonly prefix: string;
 
   constructor() {
+    const endpoint = process.env.S3_ENDPOINT || undefined;
+    const forcePathStyle = (process.env.S3_FORCE_PATH_STYLE || '').toLowerCase() === 'true';
+
     this.client = new S3Client({
-      region: process.env.AWS_REGION || 'eu-west-2',
+      region: process.env.AWS_REGION || 'us-east-1',
+      ...(endpoint ? { endpoint } : {}),
+      ...(forcePathStyle ? { forcePathStyle: true } : {}),
       credentials: {
         accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
       },
     });
-    this.bucket = process.env.S3_BUCKET || 'universal-storage-account3-2026';
+    this.bucket = process.env.S3_BUCKET || 'uteo-storage';
     this.prefix = process.env.S3_PREFIX || 'uteo/';
+  }
+
+  /**
+   * Build a public URL for a key. Uses MinIO/path-style format when an
+   * S3_ENDPOINT is configured, AWS virtual-host style otherwise.
+   */
+  publicUrl(key: string): string {
+    const endpoint = process.env.S3_ENDPOINT;
+    if (endpoint) {
+      return `${endpoint.replace(/\/$/, '')}/${this.bucket}/${key}`;
+    }
+    return `https://${this.bucket}.s3.${process.env.AWS_REGION || 'us-east-1'}.amazonaws.com/${key}`;
   }
 
   async upload(
@@ -48,8 +65,7 @@ export class S3Service {
     );
 
     this.logger.log(`Uploaded ${key} to S3`);
-    const url = `https://${this.bucket}.s3.${process.env.AWS_REGION || 'eu-west-2'}.amazonaws.com/${key}`;
-    return { key, url };
+    return { key, url: this.publicUrl(key) };
   }
 
   async getSignedUrl(key: string, expiresIn = 3600): Promise<string> {
@@ -72,8 +88,7 @@ export class S3Service {
       ContentType: mimeType,
     });
     const uploadUrl = await getSignedUrl(this.client, command, { expiresIn });
-    const publicUrl = `https://${this.bucket}.s3.${process.env.AWS_REGION || 'eu-west-2'}.amazonaws.com/${key}`;
-    return { uploadUrl, key, publicUrl };
+    return { uploadUrl, key, publicUrl: this.publicUrl(key) };
   }
 
   async delete(key: string): Promise<void> {
@@ -96,6 +111,7 @@ export class S3Service {
           'https://uteo.ai',
           'https://admin.uteo.ai',
           'https://api.uteo.ai',
+          'https://s3.wasaachat.com',
           'http://localhost:3000',
           'http://localhost:3001',
           'http://localhost:3002',

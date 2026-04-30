@@ -1,10 +1,25 @@
 import { Controller, Get, Post, Delete, Param, Query, UseInterceptors, UploadedFile, Body } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 import { MediaService } from './media.service';
 import { S3Service } from '../../common/services/s3.service';
 
-const storage = diskStorage({ destination: '/tmp/uteo-uploads', filename: (_req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`) });
+// Ensure the upload directory exists. Multer with a string destination does
+// not auto-create the dir and will 500 with ENOENT on the first request
+// after a fresh pod start. Use os.tmpdir() so we don't assume /tmp exists.
+const UPLOAD_DIR = path.join(os.tmpdir(), 'uteo-uploads');
+try { fs.mkdirSync(UPLOAD_DIR, { recursive: true }); } catch { /* dir already exists or unwritable */ }
+
+const storage = diskStorage({
+  destination: (_req, _file, cb) => {
+    // Re-create on every request in case the OS reaped /tmp between requests.
+    fs.mkdir(UPLOAD_DIR, { recursive: true }, (err) => cb(err, UPLOAD_DIR));
+  },
+  filename: (_req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
+});
 
 @Controller('media')
 export class MediaController {

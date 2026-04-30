@@ -19,16 +19,31 @@ export class MediaService {
     let fileData: Buffer;
     if (file.path) {
       this.logger.log(`Reading ${file.originalname} (${(file.size / 1024 / 1024).toFixed(1)}MB) from disk: ${file.path}`);
-      fileData = fs.readFileSync(file.path);
-      // Clean up temp file after reading
-      fs.unlinkSync(file.path);
+      try {
+        fileData = fs.readFileSync(file.path);
+      } catch (err: any) {
+        this.logger.error(`Failed to read temp file ${file.path}: ${err?.message ?? err}`);
+        throw new BadRequestException('Upload failed reading the temp file');
+      } finally {
+        // Best-effort cleanup; do not fail the upload if cleanup fails
+        try { fs.unlinkSync(file.path); } catch (cleanupErr: any) {
+          this.logger.warn(`Could not unlink temp file ${file.path}: ${cleanupErr?.message ?? cleanupErr}`);
+        }
+      }
     } else {
       fileData = file.buffer;
     }
 
-    const result = await this.s3.upload(fileData, file.originalname, file.mimetype, folder);
-    this.logger.log(`Uploaded ${file.originalname} to S3: ${result.url}`);
-    return { key: result.key, url: result.url, originalName: file.originalname, mimeType: file.mimetype, size: file.size };
+    try {
+      const result = await this.s3.upload(fileData, file.originalname, file.mimetype, folder);
+      this.logger.log(`Uploaded ${file.originalname} to S3: ${result.url}`);
+      return { key: result.key, url: result.url, originalName: file.originalname, mimeType: file.mimetype, size: file.size };
+    } catch (err: any) {
+      // Surface the real cause (S3 creds, bucket, endpoint) to the logs and the client
+      const code = err?.name ?? err?.Code ?? 'S3Error';
+      this.logger.error(`S3 upload failed (${code}): ${err?.message ?? err}`);
+      throw new BadRequestException(`S3 upload failed (${code}): ${err?.message ?? 'unknown'}`);
+    }
   }
 
   async getSignedUrl(key: string) { return { url: await this.s3.getSignedUrl(key), key }; }

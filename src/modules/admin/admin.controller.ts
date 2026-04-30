@@ -3,6 +3,7 @@ import { spawn } from 'child_process';
 import * as path from 'path';
 import { AdminService } from './admin.service';
 import { PrismaService } from '../../common/services/prisma.service';
+import { S3Service } from '../../common/services/s3.service';
 import { ListAuditLogsDto, VerifyTrainerDto, AnalyticsQueryDto } from './dto/admin.dto';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -14,7 +15,14 @@ const DEFAULT_PLATFORM: Record<string, any> = { appName: 'Uteo', supportEmail: '
 
 @Controller('admin') @UseGuards(RolesGuard) @Roles('ADMIN','SUPER_ADMIN')
 export class AdminController {
-  constructor(private readonly svc: AdminService, private readonly prisma: PrismaService) {}
+  constructor(private readonly svc: AdminService, private readonly prisma: PrismaService, private readonly s3: S3Service) {}
+
+  // ── Apply S3 bucket CORS so browsers can upload directly to presigned URLs ──
+  @Post('s3/cors') @Roles('SUPER_ADMIN')
+  async applyS3Cors() { return this.s3.applyCors(); }
+
+  @Get('s3/cors')
+  async getS3Cors() { return this.s3.getCors(); }
 
   @Get('dashboard') getDashboard() { return this.svc.getDashboard(); }
   @Get('analytics') getAnalytics(@Query() dto: AnalyticsQueryDto) { return this.svc.getAnalytics(dto); }

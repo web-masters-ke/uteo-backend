@@ -4,6 +4,8 @@ import {
   PutObjectCommand,
   GetObjectCommand,
   DeleteObjectCommand,
+  PutBucketCorsCommand,
+  GetBucketCorsCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { v4 as uuid } from 'uuid';
@@ -79,5 +81,46 @@ export class S3Service {
       new DeleteObjectCommand({ Bucket: this.bucket, Key: key }),
     );
     this.logger.log(`Deleted ${key} from S3`);
+  }
+
+  /**
+   * Apply CORS so browsers can PUT directly to presigned URLs from our domains.
+   * Idempotent — running again just overwrites the rules.
+   */
+  async applyCors(): Promise<{ bucket: string; rules: any[] }> {
+    const rules = [
+      {
+        AllowedHeaders: ['*'],
+        AllowedMethods: ['GET', 'PUT', 'POST', 'HEAD'],
+        AllowedOrigins: [
+          'https://uteo.ai',
+          'https://admin.uteo.ai',
+          'https://api.uteo.ai',
+          'http://localhost:3000',
+          'http://localhost:3001',
+          'http://localhost:3002',
+          'http://localhost:3003',
+        ],
+        ExposeHeaders: ['ETag'],
+        MaxAgeSeconds: 3000,
+      },
+    ];
+    await this.client.send(
+      new PutBucketCorsCommand({
+        Bucket: this.bucket,
+        CORSConfiguration: { CORSRules: rules },
+      }),
+    );
+    this.logger.log(`Applied CORS rules to bucket ${this.bucket}`);
+    return { bucket: this.bucket, rules };
+  }
+
+  async getCors(): Promise<any> {
+    try {
+      const r = await this.client.send(new GetBucketCorsCommand({ Bucket: this.bucket }));
+      return { bucket: this.bucket, rules: r.CORSRules };
+    } catch (e: any) {
+      return { bucket: this.bucket, rules: null, error: e?.name ?? String(e) };
+    }
   }
 }

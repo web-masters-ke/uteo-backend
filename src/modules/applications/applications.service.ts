@@ -29,13 +29,62 @@ export class ApplicationsService {
   ) {}
 
   async create(userId: string, dto: CreateApplicationDto) {
-    const job = await this.prisma.job.findUnique({ where: { id: dto.jobId } });
-    if (!job) throw new NotFoundException('Job not found');
+    const job = await this.prisma.job.findUnique({
+      where: { id: dto.jobId },
+      include: { _count: { select: { applications: { where: { status: 'HIRED' } } } } },
+    });
+    if (!job) throw new NotFoundException('This job no longer exists.');
 
+    // 1. Don't let recruiters apply to their own posting
+    if (job.postedById === userId) {
+      throw new BadRequestException('You posted this job — you cannot apply to it.');
+    }
+
+    // 2. Job must be open
+    if (job.status === 'CLOSED') {
+      throw new BadRequestException('This job is closed and is no longer accepting applications.');
+    }
+    if (job.status === 'PAUSED') {
+      throw new BadRequestException('This job is paused. Applications will reopen if the recruiter resumes it.');
+    }
+    if ((job.status as string) === 'DRAFT') {
+      throw new BadRequestException('This job is still a draft and is not yet open for applications.');
+    }
+
+    // 3. Job must not be expired
+    if (job.expiresAt && new Date(job.expiresAt) < new Date()) {
+      throw new BadRequestException(`This posting expired on ${new Date(job.expiresAt).toLocaleDateString()}.`);
+    }
+
+    // 4. Vacancies must remain
+    const vacancies = job.vacancies ?? 1;
+    if (job._count.applications >= vacancies) {
+      throw new BadRequestException('All vacancies for this role have already been filled.');
+    }
+
+    // 5. User must have a profile that includes a resume or pass one in this request
+    if (!dto.resumeUrl) {
+      const profile = await this.prisma.jobSeekerProfile.findUnique({
+        where: { userId },
+        select: { resumeUrl: true },
+      });
+      if (!profile?.resumeUrl) {
+        throw new BadRequestException('Add a resume before applying — upload one on this form or in your profile.');
+      }
+    }
+
+    // 6. Already applied
     const existing = await this.prisma.application.findUnique({
       where: { userId_jobId: { userId, jobId: dto.jobId } },
+      select: { id: true },
     });
-    if (existing) throw new ConflictException('You have already applied to this job');
+    if (existing) {
+      // Surface the existing application id so the client can deep-link to it
+      throw new ConflictException({
+        message: 'You have already applied to this job.',
+        applicationId: existing.id,
+      });
+    }
 
     // Record interaction
     await this.prisma.jobInteraction.create({
